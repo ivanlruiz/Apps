@@ -406,7 +406,8 @@ def index():
 
 @app.get('/api/status')
 def api_status():
-    return jsonify({'ffmpeg': bool(FFMPEG), 'yt_dlp': yt_dlp.version.__version__})
+    js_runtime = next((name for name in ('deno', 'node', 'bun') if shutil.which(name)), None)
+    return jsonify({'ffmpeg': bool(FFMPEG), 'yt_dlp': yt_dlp.version.__version__, 'js_runtime': js_runtime})
 
 
 @app.post('/api/info')

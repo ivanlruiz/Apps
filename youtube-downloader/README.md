@@ -55,6 +55,25 @@ docker build -t yt-downloader .
 docker run --rm -p 5000:5000 yt-downloader
 ```
 
+## Programa para Windows
+
+**[⬇ Descargar DescargadorSetup.exe](https://github.com/ivanlruiz/Apps/releases/latest/download/DescargadorSetup.exe)**
+
+1. Abre el instalador. No pide permisos de administrador.
+2. Si aparece **"Windows protegió tu PC"**, toca **Más información → Ejecutar de todas formas**.
+   El aviso sale con cualquier programa que no tenga una firma digital de pago.
+3. El Descargador se abre en el navegador. Después puedes abrirlo desde el acceso directo del
+   escritorio o desde el menú Inicio.
+
+- Lleva todo dentro: Python, ffmpeg y deno, el intérprete de JavaScript que YouTube necesita.
+- Se abre una ventana negra que hay que dejar abierta mientras lo usas. Para salir, ciérrala.
+- yt-dlp se actualiza solo una vez al día. La versión nueva se guarda en
+  `%LOCALAPPDATA%\Descargador` y se usa a partir del siguiente arranque.
+
+El ejecutable lo crea GitHub Actions en Windows con [PyInstaller](https://pyinstaller.org)
+(`windows/descargador.spec`) e [Inno Setup](https://jrsoftware.org/isinfo.php) (`windows/installer.iss`).
+El punto de entrada es `desktop.py`.
+
 ## App de Android
 
 **[⬇ Descargar el APK](https://github.com/ivanlruiz/Apps/releases/latest/download/Descargador-arm64-v8a.apk)**
@@ -75,9 +94,9 @@ como APK desde *Releases*.
 
 ### Publicar una versión nueva
 
-GitHub Actions ([`.github/workflows/android.yml`](../.github/workflows/android.yml)) compila los APK con
-cada cambio en `youtube-downloader/android/` o `youtube-downloader/static/`. Después publica una versión
-en *Releases*. También puedes lanzarlo a mano en **Actions → APK de Android → Run workflow**.
+GitHub Actions ([`.github/workflows/android.yml`](../.github/workflows/android.yml)) compila los APK y
+el instalador de Windows con cada cambio en `youtube-downloader/`. Después publica los dos juntos en una
+versión de *Releases*. También puedes lanzarlo a mano en **Actions → Compilar y publicar → Run workflow**.
 
 La clave de firma está cifrada en `android/release.jks.enc`. Para descifrarla, el workflow necesita el
 secreto `ANDROID_KEYSTORE_PASSWORD`, que se crea en **Settings → Secrets and variables → Actions**.
