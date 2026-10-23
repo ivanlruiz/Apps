@@ -82,6 +82,9 @@ def base_opts():
         'noplaylist': True,
         # YouTube necesita un intérprete de JavaScript; se usa el primero disponible.
         'js_runtimes': {'deno': {}, 'node': {}, 'bun': {}},
+        # Si falta el paquete yt-dlp-ejs (p. ej. en Termux), bajar el script oficial
+        # desde GitHub; yt-dlp comprueba su hash antes de usarlo.
+        'remote_components': ['ejs:github'],
     }
     if FFMPEG:
         opts['ffmpeg_location'] = FFMPEG

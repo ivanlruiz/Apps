@@ -55,6 +55,40 @@ docker build -t yt-downloader .
 docker run --rm -p 5000:5000 yt-downloader
 ```
 
+## En el celular
+
+### Android (con Termux)
+
+La aplicación funciona entera en el propio teléfono:
+
+1. Instala **Termux** desde [F-Droid](https://f-droid.org/packages/com.termux/). La versión de Play Store
+   puede estar desactualizada.
+2. Abre Termux, pega este comando y pulsa Enter:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/ivanlruiz/Apps/HEAD/youtube-downloader/termux.sh | bash
+   ```
+
+   El comando instala Python, ffmpeg y Node.js, descarga la aplicación y abre `http://localhost:5000`
+   en el navegador. La primera vez tarda unos minutos.
+3. La próxima vez abre Termux y escribe `descargador`.
+
+- Deja Termux abierto mientras descargas. Los archivos se guardan en la carpeta **Descargas** del teléfono.
+- **Corte preciso** vuelve a codificar el video y en un teléfono puede ir lento. Para clips largos,
+  desactívalo.
+- Para actualizar la app y yt-dlp, vuelve a ejecutar el comando del paso 2.
+
+### iPhone (o cualquier celular, usando tu ordenador)
+
+En iPhone no existe Termux. Arranca la aplicación en tu ordenador permitiendo conexiones de la red local:
+
+```bash
+HOST=0.0.0.0 python app.py          # Windows (cmd): set HOST=0.0.0.0 && python app.py
+```
+
+Después abre `http://IP-DEL-ORDENADOR:5000` en el navegador del celular, conectado a la misma wifi.
+Para ver la IP del ordenador, usa `ipconfig` en Windows o `ipconfig getifaddr en0` en Mac.
+
 ## Configuración (variables de entorno)
 
 | Variable | Por defecto | Para qué sirve |
