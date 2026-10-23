@@ -155,8 +155,14 @@
   </main>
 
   <footer>
-    Usa esta herramienta solo con videos propios, con licencia libre o con permiso de su autor,
-    respetando los derechos de autor y las condiciones de uso de YouTube.
+    <p>
+      Usa esta herramienta solo con videos propios, con licencia libre o con permiso de su autor,
+      respetando los derechos de autor y las condiciones de uso de YouTube.
+    </p>
+    <p class="footer-tools">
+      <span id="version"></span>
+      <button type="button" class="link" id="update-btn" hidden>Buscar actualización de yt-dlp</button>
+    </p>
   </footer>
 
   <template id="job-template">
@@ -167,6 +173,9 @@
           <small class="job-meta muted"></small>
         </div>
         <a class="btn primary small job-save" hidden>Guardar</a>
+        <button type="button" class="btn primary small job-open" hidden>Abrir</button>
+        <button type="button" class="btn ghost small job-share" hidden>Compartir</button>
+        <button type="button" class="btn ghost small job-cancel" hidden>Cancelar</button>
       </div>
       <div class="bar"><span></span></div>
       <small class="job-stage muted"></small>

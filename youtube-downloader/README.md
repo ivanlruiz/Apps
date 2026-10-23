@@ -55,7 +55,50 @@ docker build -t yt-downloader .
 docker run --rm -p 5000:5000 yt-downloader
 ```
 
-## En el celular
+## App de Android
+
+**[⬇ Descargar la última versión](https://github.com/ivanlruiz/Apps/releases/latest)**: en *Assets*,
+elige el APK `arm64-v8a`, que es el que sirve para la mayoría de los celulares.
+
+- Funciona entera en el teléfono, sin servidor. Lleva dentro yt-dlp, Python, ffmpeg y QuickJS, gracias a
+  [youtubedl-android](https://github.com/JunkFood02/youtubedl-android).
+- Tiene la misma interfaz que la versión web: recortar, elegir calidad y formato, y descargar solo el audio.
+- Desde la app de YouTube puedes usar **Compartir → Descargador**.
+- Los archivos se guardan en **Descargas/Descargador**, con botones para abrirlos o compartirlos.
+- Sigue descargando en segundo plano y avisa con una notificación al terminar.
+- yt-dlp se actualiza solo una vez al día. También puedes forzarlo con **Buscar actualización de yt-dlp**.
+
+La app no está en Google Play porque Play no admite apps que descargan videos de YouTube. Se distribuye
+como APK desde *Releases*.
+
+### Publicar una versión nueva
+
+GitHub Actions ([`.github/workflows/android.yml`](../.github/workflows/android.yml)) compila los APK con
+cada cambio en `youtube-downloader/android/` o `youtube-downloader/static/`. Después publica una versión
+en *Releases*. También puedes lanzarlo a mano en **Actions → APK de Android → Run workflow**.
+
+Para firmar los APK necesita dos secretos del repositorio, en **Settings → Secrets and variables → Actions**:
+
+| Secreto | Contenido |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | La clave de firma (`.jks`) codificada en base64. |
+| `ANDROID_KEYSTORE_PASSWORD` | La contraseña de esa clave. |
+
+Sin esos secretos, el APK se firma con una clave de prueba y solo queda como artefacto de Actions, sin publicarse.
+**Guarda una copia de la clave**: si se pierde, las versiones nuevas no se podrán instalar encima de
+las anteriores.
+
+### Compilar en tu ordenador
+
+Necesitas JDK 17 o superior y el Android SDK (variable `ANDROID_HOME`):
+
+```bash
+cd youtube-downloader/android
+./gradlew testReleaseUnitTest assembleRelease
+# APKs en app/build/outputs/apk/release/
+```
+
+## En el celular sin instalar la app
 
 ### Android (con Termux)
 

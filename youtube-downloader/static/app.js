@@ -64,16 +64,47 @@ const round1 = (v) => Math.round(v * 10) / 10;
 // API
 // ---------------------------------------------------------------------------
 
+// Dentro de la app de Android la misma API la atiende el código nativo a través
+// de este puente; en el navegador se usa HTTP contra el servidor de Python.
+const native = window.AndroidApp || null;
+const nativeCalls = new Map();
+let nativeSeq = 0;
+
+if (native) {
+  native.onmessage = (event) => {
+    const { id, status, data } = JSON.parse(event.data);
+    const resolve = nativeCalls.get(id);
+    nativeCalls.delete(id);
+    if (resolve) resolve({ status, data });
+  };
+}
+
+function nativeRequest(path, body) {
+  return new Promise((resolve) => {
+    const id = String(++nativeSeq);
+    nativeCalls.set(id, resolve);
+    native.postMessage(JSON.stringify({ action: 'request', id, path, body: body ? JSON.stringify(body) : '' }));
+  });
+}
+
+const nativeAction = (action, job) => native.postMessage(JSON.stringify({ action, job }));
+
 async function api(path, body) {
-  const options = body
-    ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    : undefined;
-  const res = await fetch(path, options);
+  let status;
   let data = null;
-  try { data = await res.json(); } catch { /* respuesta sin JSON */ }
-  if (!res.ok) {
-    const err = new Error(data?.error || `Error del servidor (${res.status})`);
-    err.status = res.status;
+  if (native) {
+    ({ status, data } = await nativeRequest(path, body));
+  } else {
+    const options = body
+      ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      : undefined;
+    const res = await fetch(path, options);
+    status = res.status;
+    try { data = await res.json(); } catch { /* respuesta sin JSON */ }
+  }
+  if (status >= 400) {
+    const err = new Error(data?.error || `Error del servidor (${status})`);
+    err.status = status;
     throw err;
   }
   return data;
@@ -441,6 +472,8 @@ $('#download-btn').addEventListener('click', async () => {
   const trimmed = isTrimmed();
   const body = {
     id: info.id,
+    title: info.title,
+    label: $('#summary').textContent,
     kind: state.kind,
     start: trimmed && state.start > 0.05 ? state.start : null,
     end: trimmed && state.end < info.duration - 0.05 ? state.end : null,
@@ -467,23 +500,34 @@ $('#download-btn').addEventListener('click', async () => {
   }
 });
 
+const FINISHED = ['done', 'error', 'cancelled'];
+
 function addJob(job, title, meta) {
   const el = $('#job-template').content.firstElementChild.cloneNode(true);
   el.querySelector('.job-title').textContent = title;
   el.querySelector('.job-meta').textContent = meta;
-  const entry = { ...job, el, startedAt: Date.now(), saved: false };
+  // Las descargas ya terminadas que se recuperan al abrir la app no se vuelven a guardar.
+  const entry = { ...job, el, startedAt: Date.now(), saved: FINISHED.includes(job.status) };
   state.jobs.set(job.id, entry);
   $('#job-list').prepend(el);
   $('#downloads').hidden = false;
+
+  el.querySelector('.job-cancel').addEventListener('click', async () => {
+    try { Object.assign(entry, await api(`/api/jobs/${entry.id}/cancel`, {})); } catch { /* ya terminó */ }
+    renderJob(entry);
+  });
+  el.querySelector('.job-open').addEventListener('click', () => nativeAction('open', entry.id));
+  el.querySelector('.job-share').addEventListener('click', () => nativeAction('share', entry.id));
+
   renderJob(entry);
   ensurePolling();
 }
 
 function renderJob(job) {
   const { el } = job;
-  const active = !['done', 'error'].includes(job.status);
+  const active = !FINISHED.includes(job.status);
   el.classList.toggle('done', job.status === 'done');
-  el.classList.toggle('error', job.status === 'error');
+  el.classList.toggle('error', job.status === 'error' || job.status === 'cancelled');
 
   const bar = el.querySelector('.bar');
   const fill = bar.querySelector('span');
@@ -492,9 +536,11 @@ function renderJob(job) {
 
   let text;
   if (job.status === 'done') {
-    text = `Listo · ${fmtBytes(job.size)}`;
+    text = [job.location ? `Guardado en ${job.location}` : 'Listo', fmtBytes(job.size)].filter(Boolean).join(' · ');
   } else if (job.status === 'error') {
     text = job.error || 'Error';
+  } else if (job.status === 'cancelled') {
+    text = 'Cancelada';
   } else {
     const parts = [job.stage];
     if (job.progress != null) parts.push(`${nf1.format(job.progress)} %`);
@@ -505,16 +551,21 @@ function renderJob(job) {
   }
   el.querySelector('.job-stage').textContent = text;
 
+  const done = job.status === 'done';
   const save = el.querySelector('.job-save');
-  save.hidden = job.status !== 'done';
-  if (job.status === 'done') {
+  save.hidden = native || !done;
+  if (done && !native) {
     save.href = `/api/jobs/${job.id}/file`;
     save.setAttribute('download', job.filename || '');
   }
+  // En la app el archivo ya queda en Descargas: se ofrece abrirlo, compartirlo o cancelar.
+  el.querySelector('.job-open').hidden = !(native && done);
+  el.querySelector('.job-share').hidden = !(native && done);
+  el.querySelector('.job-cancel').hidden = !(native && active);
 }
 
 function autoSave(job) {
-  if (job.saved) return;
+  if (job.saved || native) return;
   job.saved = true;
   job.el.querySelector('.job-save').click();
 }
@@ -528,7 +579,7 @@ function ensurePolling() {
 
 async function pollJobs() {
   if (polling) return;
-  const active = [...state.jobs.values()].filter((j) => !['done', 'error'].includes(j.status));
+  const active = [...state.jobs.values()].filter((j) => !FINISHED.includes(j.status));
   if (!active.length) {
     clearInterval(pollTimer);
     pollTimer = null;
@@ -554,23 +605,71 @@ async function pollJobs() {
 // Inicio
 // ---------------------------------------------------------------------------
 
+function showVersion(version) {
+  $('#version').textContent = version ? `yt-dlp ${version}` : '';
+}
+
+$('#update-btn').addEventListener('click', async () => {
+  const btn = $('#update-btn');
+  btn.disabled = true;
+  btn.textContent = 'Buscando actualización…';
+  try {
+    const result = await api('/api/update', {});
+    showVersion(result.yt_dlp);
+    btn.textContent = result.updated ? 'yt-dlp actualizado' : 'Ya tienes la última versión';
+  } catch (err) {
+    btn.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// La app de Android llama a esto cuando se comparte un enlace desde YouTube.
+window.loadSharedUrl = (url) => {
+  $('#url').value = url;
+  search(url);
+};
+
 (async () => {
+  $('#update-btn').hidden = !native;
+  const banner = $('#banner');
+  // La primera vez, la app de Android tarda en preparar Python y ffmpeg.
+  const preparing = native && setTimeout(() => {
+    banner.textContent = 'Preparando la app… la primera vez puede tardar hasta un minuto.';
+    banner.hidden = false;
+  }, 1500);
   try {
     const status = await api('/api/status');
+    showVersion(status.yt_dlp);
+    banner.hidden = true;
     if (!status.ffmpeg) {
-      const banner = $('#banner');
       banner.textContent = 'ffmpeg no está instalado en el servidor: no se podrá unir video y audio, '
         + 'recortar ni convertir. Instálalo y reinicia la aplicación (ver README).';
       banner.hidden = false;
     }
-  } catch { /* el servidor responderá al buscar */ }
+  } catch (err) {
+    if (native) {
+      banner.textContent = err.message;
+      banner.hidden = false;
+    }
+  } finally {
+    clearTimeout(preparing);
+  }
+
+  if (native) {
+    // Recuperar las descargas que siguen en marcha si la app se cerró y se volvió a abrir.
+    try {
+      const { jobs } = await api('/api/jobs');
+      for (const job of jobs) addJob(job, job.title, job.label);
+    } catch { /* sin descargas previas */ }
+  }
 
   // Permite abrir la página con ?url=… (por ejemplo, desde un marcador).
   const shared = new URLSearchParams(location.search).get('url');
   if (shared) {
     $('#url').value = shared;
     search(shared);
-  } else {
+  } else if (!native) {
     $('#url').focus();
   }
 })();

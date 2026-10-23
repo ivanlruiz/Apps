@@ -98,6 +98,18 @@ footer {
   text-align: center;
   padding-bottom: 32px;
 }
+footer p { margin: 0 0 8px; }
+.footer-tools { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; font-size: 12px; }
+.link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.link:disabled { opacity: 0.6; cursor: default; }
 
 .card {
   background: var(--surface);
@@ -438,7 +450,7 @@ footer {
   flex-direction: column;
   gap: 8px;
 }
-.job-main { display: flex; align-items: center; gap: 12px; }
+.job-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .job-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .job-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .job-stage { font-size: 13px; }

@@ -1,0 +1,75 @@
+name: APK de Android
+
+on:
+  push:
+    paths:
+      - 'youtube-downloader/android/**'
+      - 'youtube-downloader/static/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: youtube-downloader/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Preparar la clave de firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::Faltan los secretos ANDROID_KEYSTORE_BASE64 y ANDROID_KEYSTORE_PASSWORD. El APK se firma con una clave de prueba y no se publica."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Compilar y probar
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+
+      - name: Nombrar los APK
+        run: |
+          mkdir -p dist
+          for f in app/build/outputs/apk/release/app-*-release.apk; do
+            abi=$(basename "$f" | sed -E 's/^app-(.*)-release\.apk$/\1/')
+            cp "$f" "dist/Descargador-1.0.${{ github.run_number }}-$abi.apk"
+          done
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: youtube-downloader/android/dist/*.apk
+
+      # Solo se publica con la clave propia y desde la rama principal.
+      - name: Publicar en Releases
+        if: env.ANDROID_KEYSTORE_FILE != '' && github.ref_name == github.event.repository.default_branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" dist/*.apk \
+            --title "Descargador 1.0.${{ github.run_number }}" \
+            --notes-file release-notes.md \
+            --target "${{ github.sha }}" \
+            --latest
