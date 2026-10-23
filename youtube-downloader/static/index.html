@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Descargador de videos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23e5383b'/%3E%3Cpath d='M12 6v9m0 0-4-4m4 4 4-4M7 18h10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 5v10m0 0-4-4m4 4 4-4M6 19h12"/></svg>
+      </span>
+      <div>
+        <h1>Descargador de YouTube</h1>
+        <p>Descarga, recorta y elige la calidad</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="banner" class="banner" hidden></div>
+
+    <form id="search" class="card search" autocomplete="off">
+      <input id="url" type="text" inputmode="url" spellcheck="false"
+             placeholder="Pega el enlace del video de YouTube…" aria-label="Enlace del video">
+      <button type="submit" class="btn primary" id="search-btn">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-label">Buscar</span>
+      </button>
+    </form>
+    <p id="search-error" class="error" role="alert" hidden></p>
+
+    <section id="video" class="card video" hidden>
+      <div class="player-wrap">
+        <div id="player"></div>
+        <div id="player-fallback" class="player-fallback" hidden>
+          <img id="thumb" alt="">
+          <p>Este video no se puede reproducir aquí, pero puedes recortarlo escribiendo los tiempos.</p>
+        </div>
+      </div>
+      <div class="meta">
+        <h2 id="v-title"></h2>
+        <p id="v-sub" class="muted"></p>
+      </div>
+    </section>
+
+    <section id="options" hidden>
+      <div class="card" id="trim-card">
+        <div class="card-head">
+          <h3>Recortar</h3>
+          <span id="trim-length" class="pill"></span>
+        </div>
+
+        <div class="range" id="range">
+          <div class="range-track" id="range-track">
+            <div class="range-fill" id="range-fill"></div>
+            <div class="range-playhead" id="playhead" hidden></div>
+          </div>
+          <input type="range" id="range-start" aria-label="Inicio del recorte">
+          <input type="range" id="range-end" aria-label="Fin del recorte">
+        </div>
+        <div class="range-scale muted"><span>0:00</span><span id="scale-end"></span></div>
+
+        <div class="trim-grid">
+          <div class="time-field">
+            <label for="start">Inicio</label>
+            <div class="time-row">
+              <input id="start" class="time" type="text" inputmode="decimal" spellcheck="false">
+              <button type="button" class="btn ghost small player-btn" id="set-start" title="Usar el momento actual del reproductor">Momento actual</button>
+            </div>
+          </div>
+          <div class="time-field">
+            <label for="end">Fin</label>
+            <div class="time-row">
+              <input id="end" class="time" type="text" inputmode="decimal" spellcheck="false">
+              <button type="button" class="btn ghost small player-btn" id="set-end" title="Usar el momento actual del reproductor">Momento actual</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="trim-actions">
+          <button type="button" class="btn ghost small player-btn" id="preview-btn">▶ Previsualizar recorte</button>
+          <button type="button" class="btn ghost small" id="reset-trim">Restablecer</button>
+        </div>
+        <p class="hint muted">Formatos de tiempo: <code>90</code>, <code>1:30</code>, <code>1:02:03.5</code>. Pulsa en la barra para mover el reproductor.</p>
+
+        <label class="check" id="precise-row" hidden>
+          <input type="checkbox" id="precise" checked>
+          <span>Corte preciso <small class="muted">— re-codifica el video para cortar en el fotograma exacto (más lento). Sin esto, el corte se ajusta al fotograma clave más cercano.</small></span>
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Formato y calidad</h3>
+        </div>
+        <div class="segmented" role="radiogroup" aria-label="Tipo de descarga">
+          <button type="button" role="radio" aria-checked="true" data-kind="video" class="active">Video</button>
+          <button type="button" role="radio" aria-checked="false" data-kind="audio">Solo audio</button>
+        </div>
+
+        <div id="video-opts">
+          <p class="label">Calidad</p>
+          <div class="chips" id="quality-chips"></div>
+          <p class="label">Formato</p>
+          <div class="chips" id="container-chips">
+            <label class="chip"><input type="radio" name="container" value="mp4" checked><span><b>MP4</b><small>Compatible con todo</small></span></label>
+            <label class="chip"><input type="radio" name="container" value="webm"><span><b>WEBM</b><small>VP9 / Opus</small></span></label>
+            <label class="chip"><input type="radio" name="container" value="mkv"><span><b>MKV</b><small>Máxima calidad</small></span></label>
+          </div>
+          <p class="hint muted" id="codec-hint" hidden>Por encima de 1080p YouTube solo ofrece VP9/AV1: el MP4 tendrá ese códec y algunos reproductores antiguos podrían no abrirlo.</p>
+        </div>
+
+        <div id="audio-opts" hidden>
+          <p class="label">Formato</p>
+          <div class="chips" id="audio-format-chips">
+            <label class="chip"><input type="radio" name="audio_format" value="mp3" checked><span><b>MP3</b><small>Universal</small></span></label>
+            <label class="chip"><input type="radio" name="audio_format" value="m4a"><span><b>M4A</b><small>AAC</small></span></label>
+            <label class="chip"><input type="radio" name="audio_format" value="opus"><span><b>OPUS</b><small>Ligero</small></span></label>
+            <label class="chip"><input type="radio" name="audio_format" value="wav"><span><b>WAV</b><small>Sin compresión</small></span></label>
+            <label class="chip"><input type="radio" name="audio_format" value="flac"><span><b>FLAC</b><small>Sin pérdida</small></span></label>
+          </div>
+          <p class="label">Calidad</p>
+          <div class="chips" id="audio-quality-chips">
+            <label class="chip"><input type="radio" name="audio_quality" value="320"><span><b>320</b><small>kbps</small></span></label>
+            <label class="chip"><input type="radio" name="audio_quality" value="256"><span><b>256</b><small>kbps</small></span></label>
+            <label class="chip"><input type="radio" name="audio_quality" value="192" checked><span><b>192</b><small>kbps</small></span></label>
+            <label class="chip"><input type="radio" name="audio_quality" value="128"><span><b>128</b><small>kbps</small></span></label>
+            <label class="chip"><input type="radio" name="audio_quality" value="96"><span><b>96</b><small>kbps</small></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card download-bar">
+        <div class="summary">
+          <strong id="summary"></strong>
+          <span id="estimate" class="muted"></span>
+        </div>
+        <button type="button" class="btn primary big" id="download-btn">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="btn-label">Descargar</span>
+        </button>
+      </div>
+      <p id="download-error" class="error" role="alert" hidden></p>
+    </section>
+
+    <section id="downloads" hidden>
+      <h3 class="section-title">Descargas</h3>
+      <ul id="job-list" class="job-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    Usa esta herramienta solo con videos propios, con licencia libre o con permiso de su autor,
+    respetando los derechos de autor y las condiciones de uso de YouTube.
+  </footer>
+
+  <template id="job-template">
+    <li class="job">
+      <div class="job-main">
+        <div class="job-text">
+          <strong class="job-title"></strong>
+          <small class="job-meta muted"></small>
+        </div>
+        <a class="btn primary small job-save" hidden>Guardar</a>
+      </div>
+      <div class="bar"><span></span></div>
+      <small class="job-stage muted"></small>
+    </li>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
