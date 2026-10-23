@@ -31,15 +31,22 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # La clave va cifrada en release.jks.enc; el secreto ANDROID_KEYSTORE_PASSWORD la descifra.
+      # (Si existe el secreto ANDROID_KEYSTORE_BASE64, se usa esa clave en su lugar.)
       - name: Preparar la clave de firma
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::warning::Faltan los secretos ANDROID_KEYSTORE_BASE64 y ANDROID_KEYSTORE_PASSWORD. El APK se firma con una clave de prueba y no se publica."
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          elif [ -n "$ANDROID_KEYSTORE_PASSWORD" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in release.jks.enc \
+              -out "$RUNNER_TEMP/release.jks" -pass env:ANDROID_KEYSTORE_PASSWORD
+          else
+            echo "::warning::Falta el secreto ANDROID_KEYSTORE_PASSWORD. El APK se firma con una clave de prueba y no se publica."
             exit 0
           fi
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Compilar y probar
@@ -48,12 +55,13 @@ jobs:
           VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
 
+      # Nombres fijos: así .../releases/latest/download/Descargador-arm64-v8a.apk siempre da la última versión.
       - name: Nombrar los APK
         run: |
           mkdir -p dist
           for f in app/build/outputs/apk/release/app-*-release.apk; do
             abi=$(basename "$f" | sed -E 's/^app-(.*)-release\.apk$/\1/')
-            cp "$f" "dist/Descargador-1.0.${{ github.run_number }}-$abi.apk"
+            cp "$f" "dist/Descargador-$abi.apk"
           done
           ls -la dist
 

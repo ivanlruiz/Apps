@@ -57,8 +57,10 @@ docker run --rm -p 5000:5000 yt-downloader
 
 ## App de Android
 
-**[⬇ Descargar la última versión](https://github.com/ivanlruiz/Apps/releases/latest)**: en *Assets*,
-elige el APK `arm64-v8a`, que es el que sirve para la mayoría de los celulares.
+**[⬇ Descargar el APK](https://github.com/ivanlruiz/Apps/releases/latest/download/Descargador-arm64-v8a.apk)**
+sirve para la mayoría de los celulares. Para otros modelos, en
+[la página de versiones](https://github.com/ivanlruiz/Apps/releases/latest) están `armeabi-v7a`, para
+celulares antiguos, y `x86_64`.
 
 - Funciona entera en el teléfono, sin servidor. Lleva dentro yt-dlp, Python, ffmpeg y QuickJS, gracias a
   [youtubedl-android](https://github.com/JunkFood02/youtubedl-android).
@@ -77,16 +79,14 @@ GitHub Actions ([`.github/workflows/android.yml`](../.github/workflows/android.y
 cada cambio en `youtube-downloader/android/` o `youtube-downloader/static/`. Después publica una versión
 en *Releases*. También puedes lanzarlo a mano en **Actions → APK de Android → Run workflow**.
 
-Para firmar los APK necesita dos secretos del repositorio, en **Settings → Secrets and variables → Actions**:
+La clave de firma está cifrada en `android/release.jks.enc`. Para descifrarla, el workflow necesita el
+secreto `ANDROID_KEYSTORE_PASSWORD`, que se crea en **Settings → Secrets and variables → Actions**.
+Sin ese secreto, el APK se firma con una clave de prueba y solo queda como artefacto de Actions, sin
+publicarse.
 
-| Secreto | Contenido |
-|---|---|
-| `ANDROID_KEYSTORE_BASE64` | La clave de firma (`.jks`) codificada en base64. |
-| `ANDROID_KEYSTORE_PASSWORD` | La contraseña de esa clave. |
-
-Sin esos secretos, el APK se firma con una clave de prueba y solo queda como artefacto de Actions, sin publicarse.
-**Guarda una copia de la clave**: si se pierde, las versiones nuevas no se podrán instalar encima de
-las anteriores.
+Si prefieres usar otra clave, crea también el secreto `ANDROID_KEYSTORE_BASE64` con el `.jks` codificado en
+base64; tiene prioridad sobre el archivo cifrado. **Guarda la contraseña en un lugar seguro**: sin ella,
+las versiones nuevas no se podrán instalar encima de las anteriores.
 
 ### Compilar en tu ordenador
 
