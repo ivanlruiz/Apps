@@ -196,7 +196,8 @@ namespace BichiKart
                 angulo = Mathf.Atan2(desdeElCentro.y, desdeElCentro.x) * Mathf.Rad2Deg - 90f;
             }
 
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_lienzo, centro + desdeElCentro, camara, out var lugar);
+            var camaraDelLienzo = GetComponent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay ? null : camara;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_lienzo, centro + desdeElCentro, camaraDelLienzo, out var lugar);
             _flecha.localPosition = lugar;
             _flecha.localRotation = Quaternion.Euler(0f, 0f, angulo);
         }
@@ -319,11 +320,11 @@ namespace BichiKart
 
         private void ArmarLienzo()
         {
-            // En el espacio de la cámara (no encima de todo), para que salga también en las capturas.
+            // Encima de todo, para que nada la tape (por ejemplo, la pared de un caño).
             var lienzo = gameObject.AddComponent<Canvas>();
-            lienzo.renderMode = RenderMode.ScreenSpaceCamera;
+            lienzo.renderMode = RenderMode.ScreenSpaceOverlay;
             lienzo.worldCamera = camara;
-            lienzo.planeDistance = 0.5f;
+            lienzo.planeDistance = 0.15f;
             var escala = gameObject.AddComponent<CanvasScaler>();
             escala.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             escala.referenceResolution = new Vector2(1920f, 1080f);

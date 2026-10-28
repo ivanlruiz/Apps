@@ -60,6 +60,23 @@ namespace BichiKart
             return t;
         }
 
+        /// <summary>Anillos claros sobre fondo oscuro, para el interior de los caños (así se nota que se avanza).</summary>
+        public static Texture2D Anillos()
+        {
+            const int lado = 64;
+            var t = Nueva(lado, lado);
+            var px = new Color32[lado * lado];
+            for (int y = 0; y < lado; y++)
+            {
+                float banda = Mathf.Clamp01(1f - Mathf.Abs(y - lado * 0.5f) / 5f);
+                byte v = (byte)(70 + 185 * banda);
+                for (int x = 0; x < lado; x++) px[y * lado + x] = new Color32(v, v, v, 255);
+            }
+            t.SetPixels32(px);
+            t.Apply();
+            return t;
+        }
+
         /// <summary>El espacio con estrellas y planetas, con la proporción de la ventana (3 de ancho por 1 de alto).</summary>
         public static Texture2D Espacio()
         {

@@ -53,6 +53,7 @@ namespace BichiKart.Editor
 
             ConfigurarAmbiente();
             var cocina = CrearCocina(ajustesSala, capaSala);
+            new GameObject("Tubería azul").AddComponent<Tuberia>().Configurar(cocina);
             var participantes = new List<Participante>();
             for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, capaKarts, capaSala));
             var comida = CrearComida(cocina);

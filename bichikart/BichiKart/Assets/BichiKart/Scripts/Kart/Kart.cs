@@ -80,12 +80,54 @@ namespace BichiKart
         /// <summary>Cuánto más rápido o más lento va: lo pone la partida según quién tiene la comida.</summary>
         public float MultiplicadorVelocidad { get; set; } = 1f;
 
+        /// <summary>Viaja por adentro de un caño: lo mueve la tubería, no la física.</summary>
+        public bool EnCanio { get; private set; }
+
+        /// <summary>Entra a un caño: deja de chocar y de tener gravedad hasta salir.</summary>
+        public void EntrarAlCanio()
+        {
+            EnCanio = true;
+            _rb.isKinematic = true;
+            _rb.detectCollisions = false;
+            EnSuelo = false;
+            Derrapando = false;
+            DireccionDerrape = 0;
+            _cargaDerrape = 0f;
+        }
+
+        /// <summary>La tubería lo pone en un lugar del caño, mirando hacia donde avanza.</summary>
+        public void MoverEnCanio(Vector3 centro, Vector3 adelante, Vector3 arriba, float velocidad)
+        {
+            _rb.MovePosition(centro);
+            _adelante = adelante;
+            _arriba = arriba;
+            _rotacionChasis = Quaternion.LookRotation(adelante, arriba);
+            VelocidadAdelante = velocidad;
+        }
+
+        /// <summary>Sale del caño apoyado en una superficie, avanzando con una velocidad.</summary>
+        public void SalirDelCanio(Vector3 sobreLaSuperficie, Vector3 arriba, Vector3 adelante, float velocidad)
+        {
+            EnCanio = false;
+            _gravedad = -arriba;
+            _arriba = arriba;
+            _adelante = Vector3.ProjectOnPlane(adelante, arriba).normalized;
+            _rotacionChasis = Quaternion.LookRotation(_adelante, _arriba);
+            var centro = sobreLaSuperficie + arriba * ajustes.radioEsfera;
+            _rb.isKinematic = false;
+            _rb.detectCollisions = true;
+            _rb.position = centro;
+            transform.position = centro;
+            _rb.linearVelocity = _adelante * velocidad;
+        }
+
         /// <summary>
         /// Empuja el kart lejos de un punto (hacia atrás y un poco hacia arriba, para que se note) y lo deja
-        /// unos segundos sin poder manejar.
+        /// unos segundos sin poder manejar. Adentro de un caño no se lo puede empujar.
         /// </summary>
         public void Despedir(Vector3 desde, float empuje, float salto, float aturdido)
         {
+            if (EnCanio) return;
             var lejos = Vector3.ProjectOnPlane(_rb.position - desde, _arriba);
             if (lejos.sqrMagnitude < 1e-4f) lejos = -_adelante;
             _rb.linearVelocity = lejos.normalized * empuje + _arriba * salto + Vector3.ProjectOnPlane(_rb.linearVelocity, _arriba) * 0.3f;
@@ -149,11 +191,14 @@ namespace BichiKart
             _despegue = _turbo = _cargaDerrape = _aturdido = 0f;
             Derrapando = false;
             DireccionDerrape = 0;
+            EnCanio = false;
 
             var centro = sobreElPiso + _arriba * ajustes.radioEsfera;
             transform.position = centro;
             if (_rb != null)
             {
+                _rb.isKinematic = false;
+                _rb.detectCollisions = true;
                 _rb.position = centro;
                 _rb.linearVelocity = Vector3.zero;
             }
@@ -167,6 +212,7 @@ namespace BichiKart
             _aturdido = Mathf.Max(0f, _aturdido - dt);
             if (Quieto || _aturdido > 0f) ordenes = default;
             UltimasOrdenes = ordenes;
+            if (EnCanio) return;
 
             // El radio se puede cambiar mientras se juega.
             if (_esfera.radius != ajustes.radioEsfera) _esfera.radius = ajustes.radioEsfera;

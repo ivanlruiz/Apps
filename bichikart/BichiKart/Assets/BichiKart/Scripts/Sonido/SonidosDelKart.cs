@@ -40,6 +40,12 @@ namespace BichiKart
         /// <summary>Grito ofendido del que se queda sin la comida.</summary>
         public void Quejarse() => _parlante.PlayOneShot(_queja);
 
+        /// <summary>Succión al meterse en un caño.</summary>
+        public void EntrarAlCanio() => _parlante.PlayOneShot(_gravedad);
+
+        /// <summary>"Plop" al salir de un caño.</summary>
+        public void SalirDelCanio() => _parlante.PlayOneShot(_plop);
+
         private void OnEnable()
         {
             _kart.AlTocarBocina += TocarBocina;

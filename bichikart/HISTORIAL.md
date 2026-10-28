@@ -360,7 +360,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
    - **Hito 3 (hecho). Salto, derrape y bocina.**
    - **Hito 4 (hecho). El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
    - **Hito 5. La compu de verdad:** los rivales usan paredes, techo y gravedad.
-   - **Hito 6. La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo.
+   - **Hito 6 (hecho, antes que el 5). La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo. Se hizo antes que la compu para que la compu pueda aprender a usarlo.
    - **Hito 7. Ajuste final.**
    - **Decisiones:**
      - La sala tiene **medidas ajustables**, y arranca con un tamaño para 4 karts (el diseño dice que la versión chica es para 2).
@@ -373,7 +373,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 5 de la etapa 2, la compu de verdad (los hitos 0 a 4 están hechos).
+**Ahora:** hito 5 de la etapa 2, la compu de verdad (los hitos 0 a 4 y el 6 están hechos).
 
 ## 7. Pendientes del diseño
 
@@ -447,6 +447,7 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 - **Sonidos generados por código:** bocina, despegue de la gravedad, salto y mini turbo; "plop" al agarrar el pan y queja al perderlo.
 - **La partida:** un **árbitro** (C# puro, con pruebas automáticas) lleva todas las reglas: cuenta regresiva, agarrar, aguantar, robar con un toque, protección de 1 s, caída por doble toque, más lento con el pan y más rápido sin él, al mejor de 3 y muerte súbita. La escena le cuenta los toques y aplica lo que pasa: el robado sale despedido y los perseguidores rebotan entre ellos. Los toques entre karts se miden como entre cápsulas (la forma alargada del kart).
 - **Rivales de práctica:** buscan el pan, persiguen al dueño, escapan cuando lo tienen y se destraban yendo marcha atrás. Por ahora todos tienen la forma de Blip, con sus colores.
+- **La tubería azul:** un caño de metal que une un desagüe del piso (cerca de la heladera, adelante) con una rejilla del techo en la esquina de enfrente. Va por afuera de la sala: baja, pasa por debajo del piso, sube por detrás de la heladera y cruza por arriba del techo. Las dos bocas tienen una lucecita azul. Alcanza con pasar por encima de una boca para meterse; adentro se viaja solo a 24 (unos 3 segundos), la cámara va pegada atrás, doblar hace girar al kart alrededor del caño y se puede robar si otro te alcanza. Se sale por la otra boca, ya pegado a esa superficie (por ejemplo, al techo). Hay succión al entrar y "plop" al salir.
 
 ### Lecciones del hito 1
 
@@ -463,3 +464,7 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 
 - **Unity en segundo plano:** si la ventana de Unity no está al frente, el juego en Play no avanza. Se activó **Run In Background** (también hace falta para el online), y para probar sin traer Unity al frente Claude pausa el juego y lo avanza cuadro por cuadro.
 - Lo que se cambia en un archivo de ajustes **durante Play queda guardado** al salir: para probar con otros valores hay que acordarse de volverlos atrás.
+
+### Lecciones del hito 6
+
+- La interfaz va **encima de todo** (Screen Space Overlay): dibujada a una distancia de la cámara, la tapaba la pared del caño. Para las capturas, Claude la pasa un momento al modo de cámara.

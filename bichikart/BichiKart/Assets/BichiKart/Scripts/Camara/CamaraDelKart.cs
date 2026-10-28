@@ -27,7 +27,12 @@ namespace BichiKart
         [Tooltip("Segundos que tarda la cámara en acompañar el giro del kart (normal y con anti-mareo).")]
         [SerializeField] private float suavizadoGiro = 0.25f, suavizadoAntiMareo = 1f;
 
+        [Tooltip("Distancia de la cámara al kart cuando viaja por adentro de un caño.")]
+        [SerializeField] private float distanciaEnCanio = 2.6f;
+
         private CinemachineOrbitalFollow _orbita;
+        private Kart _kart;
+        private float _distanciaNormal;
 
         public bool AntiMareo
         {
@@ -35,7 +40,13 @@ namespace BichiKart
             set => antiMareo = value;
         }
 
-        private void Awake() => _orbita = GetComponent<CinemachineOrbitalFollow>();
+        private void Awake()
+        {
+            _orbita = GetComponent<CinemachineOrbitalFollow>();
+            _distanciaNormal = _orbita.Radius;
+            var objetivo = GetComponent<CinemachineCamera>().Target.TrackingTarget;
+            if (objetivo != null) _kart = objetivo.GetComponentInParent<Kart>();
+        }
 
         private void OnDisable() => SoltarMouse();
 
@@ -43,6 +54,10 @@ namespace BichiKart
         {
             AplicarAntiMareo();
             AtraparOSoltarMouse();
+
+            // Adentro de un caño, la cámara va pegada atrás del kart, por dentro.
+            float distancia = _kart != null && _kart.EnCanio ? distanciaEnCanio : _distanciaNormal;
+            _orbita.Radius = Mathf.Lerp(_orbita.Radius, distancia, 1f - Mathf.Exp(-8f * Time.deltaTime));
 
             Vector2 giro = Vector2.zero;
             var mouse = Mouse.current;
