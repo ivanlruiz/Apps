@@ -1,0 +1,8 @@
+CoreTests/bin/
+CoreTests/obj/
+/[Ll]ibrary/
+/[Tt]emp/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/*.csproj
+/*.sln
