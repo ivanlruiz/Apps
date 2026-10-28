@@ -155,9 +155,9 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 
 | Bichito | Cómo es | Personalidad | Disponible |
 |---|---|---|---|
-| **Blip** | Bolita verde menta con un ojo gigante y antena con pelotita | Hiperactivo: no para de moverse y habla rápido | Desde el principio |
-| **Pulpi** | Pulpito rosa con cuatro tentáculos | Pianista: usa los tentáculos para todo a la vez | Desde el principio |
-| **Zorbo** | Violeta de tres ojos con cuernitos | Rockero: toca una guitarra invisible | Desde el principio |
+| **Blip** | Bolita celeste con un ojo gigante, orejitas y antena con pelotita | Hiperactivo: no para de moverse y habla rápido | Desde el principio |
+| **Pulpi** | Pulpito rosa con cuatro tentáculos y moñito de concierto | Pianista: usa los tentáculos para todo a la vez | Desde el principio |
+| **Zorbo** | Violeta de tres ojos con cuernitos, cresta y pulsera con tachas | Rockero: toca una guitarra invisible | Desde el principio |
 | **Mukko** | Gota verde babosa con los ojos en dos antenitas | Pegote: se pega a todo y es muy cariñoso | Se desbloquea |
 | **Kosmo** | Astronauta diminuto con casco enorme | Explorador serio: todo es una misión espacial | Se desbloquea |
 | **Klank** | Mini robot oxidado con pantallita de cara | Ex pieza de la aspiradora robot que se escapó (conecta con la historia) | Se desbloquea |
@@ -281,14 +281,21 @@ Propuesta hecha con Gemini, ajustada a lo decidido.
 
 Todos se arman con esferas, cápsulas y formas orgánicas simples.
 
-| Bichito | Forma | Cómo va en el kart |
-|---|---|---|
-| **Blip** | Bolita verde menta con un ojo central enorme y una antena elástica con bolita naranja que vibra al acelerar | En el centro, agarrando el volante con energía y rebotando |
-| **Pulpi** | Cúpula rosa con cuatro tentáculos cortos | Sentado alto: dos tentáculos en el volante y dos gesticulando o tocando palancas |
-| **Zorbo** | Cápsula violeta con tres ojos en fila arriba y dos cuernitos | Tirado hacia atrás, con una mano en el volante y cabeceando al ritmo del funk |
-| **Mukko** | Gota verde traslúcida y viscosa, con los ojos en dos antenas flexibles que se mueven con la inercia | Desparramado sobre el kart, con manitos de baba pegadas al volante |
-| **Kosmo** | Cápsula blanca de traje espacial con un casco esférico enorme; adentro solo se ven dos ojitos brillantes | Recto y formal, con las dos manos enguantadas en el volante |
-| **Klank** | Cajita o cilindro de metal cobre oxidado, con esquinas redondeadas y una pantallita con ojos y boca de píxeles celestes | Rígido, con movimientos a los saltos |
+![Concepto de los 6 bichitos en sus karts: Blip, Pulpi, Zorbo, Mukko, Kosmo y Klank](imagenes/bichitos.png)
+
+*Concepto de los bichitos hecho con Gemini (versión corregida).*
+
+| Bichito | Forma | Cómo va en el kart | Kart por defecto |
+|---|---|---|---|
+| **Blip** | Bolita celeste claro con un ojo central enorme, dos orejitas redondas y una antena de resorte con bolita naranja que vibra al acelerar | En el centro, agarrando el volante con energía y rebotando | Naranja |
+| **Pulpi** | Cúpula rosa con cuatro tentáculos cortos, boquita chiquita y moñito negro de concierto | Dos tentáculos en el volante y dos tocando un piano invisible en el aire | Celeste |
+| **Zorbo** | Cápsula violeta con tres ojos en fila, dos cuernitos, cresta y pulsera con tachas | Tirado hacia atrás, con una mano en el volante y haciendo cuernitos con la otra | Amarillo |
+| **Mukko** | Gota verde traslúcida y viscosa, con los ojos en dos antenas flexibles que se mueven con la inercia | Desparramado sobre el kart, con manitos de baba pegadas al volante | Rosa |
+| **Kosmo** | Cápsula blanca de traje espacial con un casco esférico enorme; adentro solo se ven dos ojitos brillantes | Recto y formal, con las dos manos enguantadas en el volante | Rojo |
+| **Klank** | Cajita de metal cobre oxidado con esquinas redondeadas y una pantallita con ojos y boca de píxeles celestes | Rígido, con movimientos a los saltos | Verde menta |
+
+- Cada kart por defecto contrasta con su bichito, para que se lean bien de lejos.
+- Blip se cambió de verde a celeste y se le agregaron orejitas para que no se parezca a Mike Wazowski (Monsters Inc.).
 
 ### Karts
 
@@ -325,7 +332,7 @@ Antes de cada etapa se revisa y se aprueba qué se va a hacer.
 
 ## Pendientes
 
-- **Imágenes de concepto** de los bichitos y de los 4 mapas (hechas con Gemini, falta sumarlas).
+- **Imágenes de concepto** de los 4 mapas y del kart para personalizar (hechas con Gemini, falta sumarlas).
 - **Controles:** botones del joystick y detalle de los controles de celular.
 - **Desafíos:** lista concreta y sus premios.
 - **Tutorial:** contenido paso a paso.
