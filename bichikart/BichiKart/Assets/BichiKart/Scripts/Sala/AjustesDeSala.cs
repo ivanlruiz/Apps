@@ -25,6 +25,10 @@ namespace BichiKart
             medidas = Vector3.Max(medidas, new Vector3(12f, 6f, 12f));
             radioRincones = Mathf.Clamp(radioRincones, 0.5f, Mathf.Min(medidas.x, medidas.y, medidas.z) * 0.45f);
             tamanoAzulejo = Mathf.Max(0.2f, tamanoAzulejo);
+#if UNITY_EDITOR
+            // Fuera de Play, la Cocina solo se actualiza cuando cambia algo de la escena: así se rearma enseguida.
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+#endif
         }
     }
 }

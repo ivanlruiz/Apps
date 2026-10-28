@@ -5,25 +5,35 @@ namespace BichiKart
 {
     /// <summary>
     /// El kart que se ve, con Blip manejando, hecho con formas simples. Mientras se juega, las ruedas giran
-    /// con la velocidad, las de adelante doblan y la antena de Blip se bambolea al acelerar y frenar.
-    /// Se arma desde código y no se guarda en la escena.
+    /// con la velocidad, las de adelante doblan, la antena de Blip se bambolea al acelerar y frenar, el
+    /// kart se cruza al derrapar (con chispas celestes que se ponen naranjas cuando el mini turbo está
+    /// cargado) y los escapes tiran fuego con el turbo. Se arma desde código y no se guarda en la escena.
     /// </summary>
     [ExecuteAlways]
     public sealed class ModeloKart : MonoBehaviour
     {
         private const float RadioRueda = 0.34f;
+        private const float GiroAlDerrapar = 20f;
+
+        private static readonly Color ChispaCargando = new Color(0.5f, 0.85f, 1f);
+        private static readonly Color ChispaCargada = new Color(1f, 0.6f, 0.18f);
 
         [Tooltip("Color de la carrocería. Las ruedas son siempre negro azulado.")]
         [SerializeField] private Color colorCarroceria = new Color(1f, 0.624f, 0.11f);
 
         private Formas _formas;
         private Kart _kart;
+        private Transform _cuerpo;
         private readonly List<Transform> _ruedas = new List<Transform>();
+        private readonly List<Transform> _chispas = new List<Transform>();
+        private readonly List<Transform> _fuegos = new List<Transform>();
+        private Material _materialChispas;
         private Transform _antena;
         private Color _colorArmado;
         private float _vueltaRuedas;
         private float _velocidadAnterior;
         private float _inclinacionAntena;
+        private float _giroCuerpo;
 
         public Color ColorCarroceria
         {
@@ -51,26 +61,42 @@ namespace BichiKart
 
         private void Animar(float dt)
         {
-            if (dt <= 0f) return;
-            float velocidad = _kart != null ? _kart.VelocidadAdelante : 0f;
-            float giro = _kart != null ? _kart.UltimasOrdenes.Giro * 22f : 0f;
+            if (dt <= 0f || _kart == null) return;
+            float velocidad = _kart.VelocidadAdelante;
+            float t = Time.time;
 
             _vueltaRuedas = Mathf.Repeat(_vueltaRuedas + velocidad / RadioRueda * Mathf.Rad2Deg * dt, 360f);
+            float giroRuedas = _kart.UltimasOrdenes.Giro * 22f;
             foreach (var rueda in _ruedas)
             {
                 bool delantera = rueda.localPosition.z > 0f;
-                rueda.localRotation = Quaternion.Euler(0f, delantera ? giro : 0f, 0f) * Quaternion.Euler(_vueltaRuedas, 0f, 0f);
+                rueda.localRotation = Quaternion.Euler(0f, delantera ? giroRuedas : 0f, 0f) * Quaternion.Euler(_vueltaRuedas, 0f, 0f);
             }
+
+            // Al derrapar, el kart se cruza hacia el lado del derrape.
+            _giroCuerpo = Mathf.Lerp(_giroCuerpo, _kart.DireccionDerrape * GiroAlDerrapar, 1f - Mathf.Exp(-10f * dt));
+            _cuerpo.localRotation = Quaternion.Euler(0f, _giroCuerpo, 0f);
 
             // La antena se va para atrás al acelerar y para adelante al frenar, y siempre tiembla un poco.
             float aceleracion = (velocidad - _velocidadAnterior) / dt;
             _velocidadAnterior = velocidad;
             _inclinacionAntena = Mathf.Lerp(_inclinacionAntena, Mathf.Clamp(-aceleracion * 1.2f, -35f, 35f), 1f - Mathf.Exp(-6f * dt));
-            if (_antena != null)
+            float temblor = 4f + Mathf.Abs(velocidad) * 0.4f;
+            _antena.localRotation = Quaternion.Euler(_inclinacionAntena + Mathf.Sin(t * 9f) * temblor, 0f, Mathf.Cos(t * 7f) * temblor);
+
+            // Chispas del derrape y fuego del turbo, que titilan.
+            var colorChispa = _kart.CargaDerrape >= 1f ? ChispaCargada : ChispaCargando;
+            _materialChispas.SetColor("_BaseColor", colorChispa);
+            _materialChispas.SetColor("_EmissionColor", colorChispa * 1.8f);
+            for (int i = 0; i < _chispas.Count; i++)
             {
-                float t = Time.time;
-                float temblor = 4f + Mathf.Abs(velocidad) * 0.4f;
-                _antena.localRotation = Quaternion.Euler(_inclinacionAntena + Mathf.Sin(t * 9f) * temblor, 0f, Mathf.Cos(t * 7f) * temblor);
+                _chispas[i].gameObject.SetActive(_kart.Derrapando);
+                _chispas[i].localScale = Vector3.one * (0.14f + 0.08f * Mathf.PerlinNoise(t * 20f, i * 3.1f));
+            }
+            for (int i = 0; i < _fuegos.Count; i++)
+            {
+                _fuegos[i].gameObject.SetActive(_kart.EnTurbo);
+                _fuegos[i].localScale = new Vector3(0.22f, 0.22f, 0.35f + 0.25f * Mathf.PerlinNoise(t * 25f, i * 5.3f));
             }
         }
 
@@ -81,7 +107,9 @@ namespace BichiKart
             Limpiar();
             _formas = new Formas();
             _colorArmado = colorCarroceria;
+            _cuerpo = _formas.Nodo("Cuerpo", transform);
             ArmarKart();
+            ArmarEfectos();
             ArmarBlip();
         }
 
@@ -93,19 +121,19 @@ namespace BichiKart
             var gris = _formas.Mat(Formas.Hex("#d5d9e2"), 0.5f);
             var metal = _formas.Mat(Formas.Hex("#8b93a3"), 0.7f);
 
-            _formas.Caja("Chasis", transform, new Vector3(0f, 0.6f, 0f), new Vector3(1.5f, 0.5f, 2.2f), 0.22f, carroceria);
-            _formas.Caja("Trompa", transform, new Vector3(0f, 0.5f, 1.2f), new Vector3(1.1f, 0.35f, 0.5f), 0.15f, carroceria);
-            _formas.Caja("Paragolpes", transform, new Vector3(0f, 0.42f, 1.5f), new Vector3(1.4f, 0.25f, 0.2f), 0.1f, gris);
-            _formas.Caja("Respaldo", transform, new Vector3(0f, 1.05f, -0.75f), new Vector3(1f, 0.6f, 0.2f), 0.1f, respaldo);
-            _formas.Caja("Alerón", transform, new Vector3(0f, 1.35f, -1.05f), new Vector3(1.7f, 0.1f, 0.4f), 0.05f, carroceria);
-            _formas.Cilindro("Escape izquierdo", transform, new Vector3(-0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
-            _formas.Cilindro("Escape derecho", transform, new Vector3(0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
+            _formas.Caja("Chasis", _cuerpo, new Vector3(0f, 0.6f, 0f), new Vector3(1.5f, 0.5f, 2.2f), 0.22f, carroceria);
+            _formas.Caja("Trompa", _cuerpo, new Vector3(0f, 0.5f, 1.2f), new Vector3(1.1f, 0.35f, 0.5f), 0.15f, carroceria);
+            _formas.Caja("Paragolpes", _cuerpo, new Vector3(0f, 0.42f, 1.5f), new Vector3(1.4f, 0.25f, 0.2f), 0.1f, gris);
+            _formas.Caja("Respaldo", _cuerpo, new Vector3(0f, 1.05f, -0.75f), new Vector3(1f, 0.6f, 0.2f), 0.1f, respaldo);
+            _formas.Caja("Alerón", _cuerpo, new Vector3(0f, 1.35f, -1.05f), new Vector3(1.7f, 0.1f, 0.4f), 0.05f, carroceria);
+            _formas.Cilindro("Escape izquierdo", _cuerpo, new Vector3(-0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
+            _formas.Cilindro("Escape derecho", _cuerpo, new Vector3(0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
 
             _ruedas.Clear();
             foreach (var x in new[] { -0.85f, 0.85f })
             foreach (var z in new[] { -0.7f, 0.75f })
             {
-                var rueda = _formas.Nodo("Rueda", transform);
+                var rueda = _formas.Nodo("Rueda", _cuerpo);
                 rueda.localPosition = new Vector3(x, RadioRueda, z);
                 _formas.Cilindro("Goma", rueda, Vector3.zero, new Vector3(0.68f, 0.15f, 0.68f), Quaternion.Euler(0f, 0f, 90f), goma);
                 // Un rayo de la llanta, para que se note que la rueda gira.
@@ -114,10 +142,33 @@ namespace BichiKart
             }
         }
 
+        private void ArmarEfectos()
+        {
+            _chispas.Clear();
+            _fuegos.Clear();
+            _materialChispas = _formas.Emisivo(ChispaCargando, 4f);
+            foreach (var x in new[] { -0.85f, 0.85f })
+            {
+                var chispa = _formas.Esfera("Chispas", _cuerpo, new Vector3(x, 0.08f, -1.05f), Vector3.one * 0.18f, _materialChispas);
+                Formas.SinSombra(chispa);
+                chispa.gameObject.SetActive(false);
+                _chispas.Add(chispa);
+            }
+
+            var fuego = _formas.Emisivo(Formas.Hex("#ff8a2a"), 5f);
+            foreach (var x in new[] { -0.35f, 0.35f })
+            {
+                var llama = _formas.Esfera("Fuego del turbo", _cuerpo, new Vector3(x, 0.55f, -1.4f), Vector3.one * 0.22f, fuego);
+                Formas.SinSombra(llama);
+                llama.gameObject.SetActive(false);
+                _fuegos.Add(llama);
+            }
+        }
+
         private void ArmarBlip()
         {
             // Blip: bolita celeste de un ojo, con orejitas y antena de resorte con bolita naranja.
-            var blip = _formas.Nodo("Blip", transform);
+            var blip = _formas.Nodo("Blip", _cuerpo);
             blip.localPosition = new Vector3(0f, 1.3f, -0.2f);
             var celeste = _formas.Mat(Formas.Hex("#8fd3ff"), 0.5f);
             _formas.Esfera("Cuerpo", blip, Vector3.zero, Vector3.one * 0.9f, celeste);
@@ -135,7 +186,11 @@ namespace BichiKart
         {
             _formas?.Limpiar();
             _formas = null;
+            _cuerpo = null;
             _ruedas.Clear();
+            _chispas.Clear();
+            _fuegos.Clear();
+            _materialChispas = null;
             _antena = null;
         }
     }

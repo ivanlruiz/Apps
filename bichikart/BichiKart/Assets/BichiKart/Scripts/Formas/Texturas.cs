@@ -60,9 +60,10 @@ namespace BichiKart
             return t;
         }
 
+        /// <summary>El espacio con estrellas y planetas, con la proporción de la ventana (3 de ancho por 1 de alto).</summary>
         public static Texture2D Espacio()
         {
-            const int w = 512, h = 300;
+            const int w = 768, h = 256;
             var t = Nueva(w, h);
             t.wrapMode = TextureWrapMode.Clamp;
             var px = new Color[w * h];
@@ -73,15 +74,15 @@ namespace BichiKart
                 px[y * w + x] = Color.Lerp(abajo, arriba, y / (float)h);
 
             var rng = new System.Random(3);
-            for (int i = 0; i < 700; i++)
+            for (int i = 0; i < 900; i++)
             {
                 int x = rng.Next(w), y = rng.Next(h);
                 float brillo = 0.4f + (float)rng.NextDouble() * 0.6f;
                 px[y * w + x] = Color.Lerp(px[y * w + x], Color.white, brillo);
             }
-            Planeta(px, w, h, 130, 190, 46, Formas.Hex("#ff9f6b"));
-            Planeta(px, w, h, 400, 80, 26, Formas.Hex("#3e8ef7"));
-            Planeta(px, w, h, 300, 230, 12, Formas.Hex("#79f0c3"));
+            Planeta(px, w, h, 170, 160, 44, Formas.Hex("#ff9f6b"));
+            Planeta(px, w, h, 590, 70, 24, Formas.Hex("#3e8ef7"));
+            Planeta(px, w, h, 440, 200, 11, Formas.Hex("#79f0c3"));
             t.SetPixels(px);
             t.Apply();
             return t;

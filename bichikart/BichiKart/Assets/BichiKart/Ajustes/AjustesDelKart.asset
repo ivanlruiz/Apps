@@ -26,3 +26,16 @@ MonoBehaviour:
   distanciaSuelo: 0.3
   alineacion: 12
   suavizadoChasis: 20
+  ruedasMagneticas: 1
+  impulsoGravedad: 9
+  esperaGravedad: 0.4
+  alcanceGravedad: 80
+  impulsoSalto: 9
+  velocidadMinimaDerrape: 7
+  giroDerrape: {x: 0.45, y: 1.35}
+  deslizamientoDerrape: 0.3
+  agarreDerrape: 4
+  cargaMiniTurbo: 0.9
+  duracionTurbo: 0.8
+  velocidadTurbo: 1.35
+  aceleracionTurbo: 45

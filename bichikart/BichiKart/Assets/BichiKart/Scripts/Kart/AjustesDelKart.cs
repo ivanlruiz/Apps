@@ -52,5 +52,47 @@ namespace BichiKart
 
         [Tooltip("Suavizado del kart que se ve. Más es más pegado a la física.")]
         public float suavizadoChasis = 20f;
+
+        [Header("Paredes, techo y gravedad")]
+        [Tooltip("Ruedas magnéticas: la gravedad tira hacia la superficie que el kart tiene abajo, así se puede subir por las paredes hasta el techo.")]
+        public bool ruedasMagneticas = true;
+
+        [Tooltip("Velocidad con la que despega hacia la superficie de enfrente al apretar el botón de gravedad.")]
+        public float impulsoGravedad = 9f;
+
+        [Tooltip("Segundos de espera entre dos usos del botón de gravedad.")]
+        public float esperaGravedad = 0.4f;
+
+        [Tooltip("Hasta qué distancia busca la superficie de enfrente.")]
+        public float alcanceGravedad = 80f;
+
+        [Header("Salto")]
+        [Tooltip("Velocidad con la que despega al saltar.")]
+        public float impulsoSalto = 9f;
+
+        [Header("Derrape y mini turbo")]
+        [Tooltip("Velocidad mínima para empezar a derrapar.")]
+        public float velocidadMinimaDerrape = 7f;
+
+        [Tooltip("Cuánto dobla derrapando, de lo más abierto (doblando para el otro lado) a lo más cerrado, comparado con el giro normal.")]
+        public Vector2 giroDerrape = new Vector2(0.45f, 1.35f);
+
+        [Tooltip("Cuánto se desliza hacia afuera de la curva al derrapar, comparado con la velocidad.")]
+        [Range(0f, 1f)] public float deslizamientoDerrape = 0.3f;
+
+        [Tooltip("Qué tan rápido se acomoda ese deslizamiento. Más bajo es más resbaloso.")]
+        public float agarreDerrape = 4f;
+
+        [Tooltip("Segundos de derrape para cargar el mini turbo.")]
+        public float cargaMiniTurbo = 0.9f;
+
+        [Tooltip("Segundos que dura el mini turbo.")]
+        public float duracionTurbo = 0.8f;
+
+        [Tooltip("Velocidad máxima con turbo, comparada con la normal.")]
+        public float velocidadTurbo = 1.35f;
+
+        [Tooltip("Cuánto gana de velocidad por segundo con turbo.")]
+        public float aceleracionTurbo = 45f;
     }
 }

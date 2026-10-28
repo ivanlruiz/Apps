@@ -11,14 +11,26 @@ namespace BichiKart
     /// </summary>
     public sealed class Formas
     {
+        /// <summary>
+        /// Materiales de muestra guardados en Resources. Se copian en vez de buscar el shader por nombre,
+        /// porque en el juego compilado solo vienen los shaders que usa algún material guardado.
+        /// </summary>
+        private const string RutaBase = "Formas/Base", RutaEmisivo = "Formas/Emisivo";
+
         private readonly List<Object> _creados = new List<Object>();
         private readonly Dictionary<(Color, float), Material> _materiales = new Dictionary<(Color, float), Material>();
-        private readonly Shader _shader;
+        private readonly Material _base, _emisivo;
 
         public Formas()
         {
-            _shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (_shader == null) _shader = Shader.Find("Standard");
+            _base = Resources.Load<Material>(RutaBase);
+            _emisivo = Resources.Load<Material>(RutaEmisivo);
+            if (_base == null)
+            {
+                _base = new Material(Shader.Find("Universal Render Pipeline/Lit")) { hideFlags = HideFlags.DontSave };
+                _creados.Add(_base);
+            }
+            if (_emisivo == null) _emisivo = _base;
         }
 
         // ------------------------------------------------------------------ objetos
@@ -95,7 +107,7 @@ namespace BichiKart
         public Material Mat(Color color, float suavidad, Texture2D textura = null)
         {
             if (textura == null && _materiales.TryGetValue((color, suavidad), out var existente)) return existente;
-            var m = new Material(_shader) { hideFlags = HideFlags.DontSave, color = color };
+            var m = new Material(_base) { hideFlags = HideFlags.DontSave, color = color };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", suavidad);
             if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", suavidad);
@@ -116,7 +128,7 @@ namespace BichiKart
         /// <summary>Material que brilla con luz propia (lucecitas, la ventana al espacio).</summary>
         public Material Emisivo(Color color, float fuerza, Texture2D textura = null)
         {
-            var m = new Material(_shader) { hideFlags = HideFlags.DontSave, color = textura != null ? Color.white : color };
+            var m = new Material(_emisivo) { hideFlags = HideFlags.DontSave, color = textura != null ? Color.white : color };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", textura != null ? Color.white : color);
             m.EnableKeyword("_EMISSION");
             m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;

@@ -7,7 +7,8 @@ namespace BichiKart
     /// <summary>
     /// Mueve con el mouse (o el stick derecho del joystick) la cámara que va detrás del kart. Al soltar,
     /// Cinemachine la vuelve sola atrás del kart. Para usar el mouse hay que hacer clic en el juego;
-    /// Escape suelta el mouse.
+    /// Escape suelta el mouse. La cámara gira con el kart cuando sube por las paredes o va por el techo;
+    /// con el anti-mareo ese giro es más lento.
     /// </summary>
     [RequireComponent(typeof(CinemachineOrbitalFollow))]
     public sealed class CamaraDelKart : MonoBehaviour
@@ -20,7 +21,19 @@ namespace BichiKart
 
         [SerializeField] private bool invertirVertical;
 
+        [Tooltip("Anti-mareo: la cámara acompaña más despacio los giros del kart en las paredes y el techo.")]
+        [SerializeField] private bool antiMareo;
+
+        [Tooltip("Segundos que tarda la cámara en acompañar el giro del kart (normal y con anti-mareo).")]
+        [SerializeField] private float suavizadoGiro = 0.25f, suavizadoAntiMareo = 1f;
+
         private CinemachineOrbitalFollow _orbita;
+
+        public bool AntiMareo
+        {
+            get => antiMareo;
+            set => antiMareo = value;
+        }
 
         private void Awake() => _orbita = GetComponent<CinemachineOrbitalFollow>();
 
@@ -28,6 +41,7 @@ namespace BichiKart
 
         private void Update()
         {
+            AplicarAntiMareo();
             AtraparOSoltarMouse();
 
             Vector2 giro = Vector2.zero;
@@ -41,6 +55,15 @@ namespace BichiKart
             _orbita.HorizontalAxis.Value = _orbita.HorizontalAxis.ClampValue(_orbita.HorizontalAxis.Value + giro.x);
             float vertical = invertirVertical ? giro.y : -giro.y;
             _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + vertical);
+        }
+
+        private void AplicarAntiMareo()
+        {
+            var seguimiento = _orbita.TrackerSettings;
+            float buscado = antiMareo ? suavizadoAntiMareo : suavizadoGiro;
+            if (Mathf.Approximately(seguimiento.QuaternionDamping, buscado)) return;
+            seguimiento.QuaternionDamping = buscado;
+            _orbita.TrackerSettings = seguimiento;
         }
 
         private static void AtraparOSoltarMouse()

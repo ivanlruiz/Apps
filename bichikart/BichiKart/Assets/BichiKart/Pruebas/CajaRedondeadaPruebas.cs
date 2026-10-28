@@ -73,6 +73,30 @@ namespace BichiKart.Pruebas
             Object.DestroyImmediate(caja);
         }
 
+        [Test]
+        public void LaTexturaSigueLaPosicionSobreLaCara([ValueSource(nameof(Caras))] int cara)
+        {
+            // En la parte plana de la cara, la coordenada de textura tiene que avanzar pareja con la posición.
+            var tamano = new Vector3(40f, 14f, 32f);
+            var malla = CajaRedondeada.CrearCara(tamano, 3.5f, cara, true);
+            Vector3 u = CajaRedondeada.EjeU(cara), v = CajaRedondeada.EjeV(cara);
+            Vector3 haciaAfuera = Vector3.Cross(u, v);
+            float mitadU = Mathf.Abs(Vector3.Dot(u, tamano)) * 0.5f, mitadV = Mathf.Abs(Vector3.Dot(v, tamano)) * 0.5f;
+            var vertices = malla.vertices;
+            var normales = malla.normals;
+            var uvs = malla.uv;
+            int planos = 0;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                if (Vector3.Dot(normales[i], haciaAfuera) > -0.9999f) continue;
+                planos++;
+                Assert.That(uvs[i].x, Is.EqualTo((Vector3.Dot(vertices[i], u) + mitadU) / (2f * mitadU)).Within(1e-4f), $"U del vértice {i}");
+                Assert.That(uvs[i].y, Is.EqualTo((Vector3.Dot(vertices[i], v) + mitadV) / (2f * mitadV)).Within(1e-4f), $"V del vértice {i}");
+            }
+            Assert.That(planos, Is.GreaterThan(0));
+            Object.DestroyImmediate(malla);
+        }
+
         /// <param name="sentido">1 si las normales tienen que mirar hacia afuera, -1 si hacia adentro.</param>
         private static void ComprobarNormales(Mesh malla, float sentido)
         {

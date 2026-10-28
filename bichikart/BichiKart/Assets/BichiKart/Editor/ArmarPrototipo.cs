@@ -24,6 +24,12 @@ namespace BichiKart.Editor
         [MenuItem("BichiKart/Armar escena Prototipo")]
         public static void Armar()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.LogWarning("[Prototipo] Salí de Play antes de armar la escena.");
+                return;
+            }
+
             var escena = SceneManager.GetActiveScene();
             if (escena.path != RutaEscena)
             {
@@ -86,6 +92,8 @@ namespace BichiKart.Editor
             var kart = raiz.AddComponent<Kart>();
             kart.Configurar(ajustes, chasis.transform, 1 << capaSala);
             raiz.AddComponent<FuenteTeclado>();
+            raiz.AddComponent<AudioSource>();
+            raiz.AddComponent<SonidosDelKart>();
             return kart;
         }
 

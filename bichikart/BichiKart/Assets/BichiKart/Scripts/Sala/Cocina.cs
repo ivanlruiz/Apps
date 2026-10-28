@@ -149,17 +149,18 @@ namespace BichiKart
 
         private void ArmarObstaculos()
         {
+            // Van en las diagonales, para dejar libres el centro y las cuatro salidas.
             var m = ajustes.medidas;
 
             // Terrón de azúcar: para esconderse detrás.
-            var terron = _formas.Caja("Terrón de azúcar", transform, new Vector3(-m.x * 0.22f, 1.6f, -m.z * 0.05f),
+            var terron = _formas.Caja("Terrón de azúcar", transform, new Vector3(-m.x * 0.25f, 1.6f, -m.z * 0.22f),
                 Vector3.one * 3.2f, 0.45f, _formas.Mat(Formas.Hex("#fbfaf4"), 0.2f));
             terron.localRotation = Quaternion.Euler(0f, 18f, 0f);
             terron.gameObject.AddComponent<BoxCollider>();
 
             // Frasco de mermelada con su etiqueta y su tapa.
             var frasco = _formas.Nodo("Frasco de mermelada", transform);
-            frasco.localPosition = new Vector3(m.x * 0.24f, 0f, m.z * 0.12f);
+            frasco.localPosition = new Vector3(m.x * 0.25f, 0f, m.z * 0.24f);
             var vidrio = _formas.Cilindro("Vidrio", frasco, new Vector3(0f, 2.75f, 0f), new Vector3(4f, 2.75f, 4f), Quaternion.identity,
                 _formas.Mat(Formas.Hex("#e2475e"), 0.85f));
             var colision = vidrio.gameObject.AddComponent<MeshCollider>();

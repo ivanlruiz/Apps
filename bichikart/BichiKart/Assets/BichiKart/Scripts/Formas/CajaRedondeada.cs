@@ -51,8 +51,9 @@ namespace BichiKart
             Vector3 interior = mitad - Vector3.one * radio;
 
             Vector3 normal = Normales[cara], u = EjesU[cara], v = EjesV[cara];
-            var muestrasU = Muestras(Componente(u, mitad), Componente(u, interior), segmentos);
-            var muestrasV = Muestras(Componente(v, mitad), Componente(v, interior), segmentos);
+            float mitadU = Componente(u, mitad), mitadV = Componente(v, mitad);
+            var muestrasU = Muestras(mitadU, Componente(u, interior), segmentos);
+            var muestrasV = Muestras(mitadV, Componente(v, interior), segmentos);
             float altura = Componente(normal, mitad);
             int inicio = datos.Vertices.Count;
 
@@ -69,7 +70,8 @@ namespace BichiKart
                     direccion = direccion.sqrMagnitude > 1e-10f ? direccion.normalized : normal;
                     datos.Vertices.Add(nucleo + direccion * radio);
                     datos.Normales.Add(haciaAdentro ? -direccion : direccion);
-                    datos.Uvs.Add(new Vector2(i / (float)(muestrasU.Count - 1), j / (float)(muestrasV.Count - 1)));
+                    // La textura sigue la posición sobre la cara, así no se amontona en los bordes redondeados.
+                    datos.Uvs.Add(new Vector2((muestrasU[i] + mitadU) / (2f * mitadU), (muestrasV[j] + mitadV) / (2f * mitadV)));
                 }
             }
 
