@@ -28,6 +28,9 @@ namespace BichiKart
         [Tooltip("Si dos karts tocan al dueño dentro de estos segundos, la comida se cae en vez de ser robada.")]
         public float ventanaDobleToque = 0.1f;
 
+        [Tooltip("Al que se le cayó la comida no la puede volver a agarrar durante estos segundos.")]
+        public float esperaTrasCaida = 0.6f;
+
         [Tooltip("El que tiene la comida va así de rápido (1 = normal).")]
         public float velocidadDuenio = 0.85f;
 

@@ -359,7 +359,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
    - **Hito 2 (hecho). Paredes, techo y gravedad:** ruedas magnéticas, cámara que gira con vos (con anti-mareo) y Ctrl.
    - **Hito 3 (hecho). Salto, derrape y bocina.**
    - **Hito 4 (hecho). El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
-   - **Hito 5. La compu de verdad:** los rivales usan paredes, techo y gravedad.
+   - **Hito 5 (hecho). La compu de verdad:** los rivales usan paredes, techo y gravedad, el caño, derrapan en las curvas y se esconden cuando tienen el pan. Sus números están en `AjustesDeCompu`.
    - **Hito 6 (hecho, antes que el 5). La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo. Se hizo antes que la compu para que la compu pueda aprender a usarlo.
    - **Hito 7. Ajuste final.**
    - **Decisiones:**
@@ -367,13 +367,14 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
      - Además de las reglas básicas, entran el **rebote entre perseguidores**, la **caída por doble toque**, el **mejor de 3 rondas** y la **muerte súbita**.
      - El **minimapa** es una vista de arriba: el ícono de cada kart cambia según esté en el piso, en una pared o en el techo.
      - Cada hito se cierra con commit y push cuando Claude lo probó en Unity. El usuario lo prueba cuando puede.
+     - Después del hito 6 (respuestas del usuario): al que se le cae el pan no lo puede volver a agarrar durante **0,6 s**; la flecha apunta también al pan suelto; la cámara va **un poco más alta** para ver por encima del pan; la compu usa **a propósito** paredes, techo, gravedad y el caño, y **se esconde** detrás del terrón o del frasco cuando tiene el pan. La velocidad (16) queda como está hasta que el usuario la pruebe.
 3. **Prueba de online**: dos PCs en la misma sala, con la comida y el robo, antes de invertir en arte.
 4. Bichitos, mapas y arte (modelos 3D).
 5. Online completo y partidas personalizadas.
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 5 de la etapa 2, la compu de verdad (los hitos 0 a 4 y el 6 están hechos).
+**Ahora:** hito 7 de la etapa 2, el ajuste final (los hitos 0 a 6 están hechos). Para eso hace falta que el usuario juegue y cuente cómo se siente.
 
 ## 7. Pendientes del diseño
 
@@ -434,7 +435,8 @@ Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian 
 |---|---|---|
 | `AjustesDeSala` | Medidas de la Cocina y radio de los rincones | 40 × 14 × 32, rincones de 3,5 |
 | `AjustesDelKart` | Velocidad, aceleración, frenado, giro, agarre, gravedad, salto, derrape y turbo | Máxima 16, llega en ~1 s, marcha atrás 7, dobla 150° por segundo. El mini turbo se carga con 0,9 s de derrape y lleva a 21,6 durante 0,8 s |
-| `ReglasDePartida` | Tiempo para ganar, rondas, muerte súbita, protección, doble toque, velocidades con y sin el pan, empujones y pausas | 15/20/20 s según jugadores, al mejor de 3, muerte súbita a los 3 min (5 s), protección 1 s, doble toque 0,1 s, dueño ×0,85 y perseguidores ×1,10, cuenta de 3 s |
+| `ReglasDePartida` | Tiempo para ganar, rondas, muerte súbita, protección, doble toque, velocidades con y sin el pan, empujones y pausas | 15/20/20 s según jugadores, al mejor de 3, muerte súbita a los 3 min (5 s), protección 1 s, doble toque 0,1 s (y 0,6 s sin poder volver a agarrarlo), dueño ×0,85 y perseguidores ×1,10, cuenta de 3 s |
+| `AjustesDeCompu` | Cómo juega la compu: reacción, giro, anticipación, derrape, gravedad, caño, esconderse y huir | Decide cada 0,25 s, se tira con la gravedad si el objetivo está a menos de 8 de costado en la superficie de enfrente, busca el caño a menos de 10 de una boca, huye si alguien se acerca a menos de 9 |
 
 La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y vuelve sola atrás un segundo después de soltar el mouse. En el objeto **Cámara del kart** se puede tildar **Anti Mareo** para que acompañe más despacio los giros.
 
@@ -446,7 +448,7 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 - **Botón de gravedad:** solo apoyado y con una espera de 0,4 s. El kart despega hacia la superficie de enfrente, gira como un tonel en el aire y aterriza sin perder velocidad.
 - **Sonidos generados por código:** bocina, despegue de la gravedad, salto y mini turbo; "plop" al agarrar el pan y queja al perderlo.
 - **La partida:** un **árbitro** (C# puro, con pruebas automáticas) lleva todas las reglas: cuenta regresiva, agarrar, aguantar, robar con un toque, protección de 1 s, caída por doble toque, más lento con el pan y más rápido sin él, al mejor de 3 y muerte súbita. La escena le cuenta los toques y aplica lo que pasa: el robado sale despedido y los perseguidores rebotan entre ellos. Los toques entre karts se miden como entre cápsulas (la forma alargada del kart).
-- **Rivales de práctica:** buscan el pan, persiguen al dueño, escapan cuando lo tienen y se destraban yendo marcha atrás. Por ahora todos tienen la forma de Blip, con sus colores.
+- **La compu (Pulpi, Zorbo y Mukko):** busca el pan suelto; persigue al dueño adelantándose a donde va a estar; si el dueño está en la superficie de enfrente, más o menos encima, usa la gravedad; si está cerca de la otra boca del caño, se mete por el caño. Con el pan, se esconde detrás del terrón o del frasco, y si alguien se acerca escapa (con la gravedad o el caño si lo tienen encima). Esquiva los obstáculos, derrapa en las curvas cerradas para el mini turbo y, si se traba, retrocede. Por ahora todos tienen la forma de Blip, con sus colores. El rival simple del hito 4 (`FuentePractica`) quedó en el proyecto sin usar; puede servir para un nivel "Fácil".
 - **La tubería azul:** un caño de metal que une un desagüe del piso (cerca de la heladera, adelante) con una rejilla del techo en la esquina de enfrente. Va por afuera de la sala: baja, pasa por debajo del piso, sube por detrás de la heladera y cruza por arriba del techo. Las dos bocas tienen una lucecita azul. Alcanza con pasar por encima de una boca para meterse; adentro se viaja solo a 24 (unos 3 segundos), la cámara va pegada atrás, doblar hace girar al kart alrededor del caño y se puede robar si otro te alcanza. Se sale por la otra boca, ya pegado a esa superficie (por ejemplo, al techo). Hay succión al entrar y "plop" al salir.
 
 ### Lecciones del hito 1
@@ -464,6 +466,10 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 
 - **Unity en segundo plano:** si la ventana de Unity no está al frente, el juego en Play no avanza. Se activó **Run In Background** (también hace falta para el online), y para probar sin traer Unity al frente Claude pausa el juego y lo avanza cuadro por cuadro.
 - Lo que se cambia en un archivo de ajustes **durante Play queda guardado** al salir: para probar con otros valores hay que acordarse de volverlos atrás.
+
+### Lecciones del hito 5
+
+- En una simulación de un minuto con 4 compus hubo **21 robos**: nadie aguantó más de 5 segundos seguidos. Cada compu usó la gravedad unas 11 veces (se subió la espera entre usos a 4 s) y el caño entre 1 y 3 veces. Aguantar 20 s contra 3 compus puede ser muy difícil: hay que ver jugando si conviene que la compu reaccione más lento o que la diferencia de velocidad sea menor.
 
 ### Lecciones del hito 6
 

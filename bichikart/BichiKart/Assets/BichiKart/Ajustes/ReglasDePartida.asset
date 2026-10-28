@@ -20,6 +20,7 @@ MonoBehaviour:
   tiempoMuerteSubita: 5
   proteccionTrasRobo: 1
   ventanaDobleToque: 0.1
+  esperaTrasCaida: 0.6
   velocidadDuenio: 0.85
   velocidadPerseguidores: 1.1
   empujeRobado: 9

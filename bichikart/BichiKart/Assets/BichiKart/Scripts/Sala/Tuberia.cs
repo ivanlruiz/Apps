@@ -57,6 +57,14 @@ namespace BichiKart
             public float Giro;
         }
 
+        /// <summary>Las dos bocas (0: la del piso, 1: la del techo): dónde están y hacia dónde miran.</summary>
+        public (Vector3 lugar, Vector3 normal) Boca(int numero)
+        {
+            return numero == 0
+                ? (transform.TransformPoint(_bocaPiso), transform.TransformDirection(_normalPiso))
+                : (transform.TransformPoint(_bocaTecho), transform.TransformDirection(_normalTecho));
+        }
+
         /// <summary>Lo usa la herramienta que arma la escena.</summary>
         public void Configurar(Cocina nuevaCocina)
         {

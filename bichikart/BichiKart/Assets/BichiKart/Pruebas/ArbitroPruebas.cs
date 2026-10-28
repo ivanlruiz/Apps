@@ -25,6 +25,7 @@ namespace BichiKart.Pruebas
             _reglas.rondasParaGanar = 2;
             _reglas.proteccionTrasRobo = 1f;
             _reglas.ventanaDobleToque = 0.1f;
+            _reglas.esperaTrasCaida = 0.6f;
             _reglas.muerteSubitaTras = 180f;
             _reglas.tiempoMuerteSubita = 5f;
             _reglas.cuentaRegresiva = 3f;
@@ -131,6 +132,40 @@ namespace BichiKart.Pruebas
             _arbitro.ReportarToqueEntreKarts(0, 2);
             Avanzar(0.1f);
             Assert.That(_arbitro.Duenio, Is.EqualTo(Arbitro.Nadie));
+        }
+
+        [Test]
+        public void AlQueSeLeCayoNoLaPuedeVolverAAgarrarEnseguida()
+        {
+            Arrancar();
+            Agarrar(0);
+            _arbitro.ReportarToqueEntreKarts(1, 0);
+            _arbitro.ReportarToqueEntreKarts(2, 0);
+            Avanzar(0.12f);
+            Assert.That(_arbitro.Duenio, Is.EqualTo(Arbitro.Nadie));
+
+            _arbitro.ReportarToqueComida(0);
+            Avanzar(Paso);
+            Assert.That(_arbitro.Duenio, Is.EqualTo(Arbitro.Nadie), "El que la tiró espera");
+
+            Avanzar(0.6f);
+            _arbitro.ReportarToqueComida(0);
+            Avanzar(Paso);
+            Assert.That(_arbitro.Duenio, Is.EqualTo(0), "Pasada la espera, sí puede");
+        }
+
+        [Test]
+        public void SiSeLeCayoAUnoOtroLaPuedeAgarrarEnseguida()
+        {
+            Arrancar();
+            Agarrar(0);
+            _arbitro.ReportarToqueEntreKarts(1, 0);
+            _arbitro.ReportarToqueEntreKarts(2, 0);
+            Avanzar(0.12f);
+            _arbitro.ReportarToqueComida(0);
+            _arbitro.ReportarToqueComida(3);
+            Avanzar(Paso);
+            Assert.That(_arbitro.Duenio, Is.EqualTo(3));
         }
 
         [Test]

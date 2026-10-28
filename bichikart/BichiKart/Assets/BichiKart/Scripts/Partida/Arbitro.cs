@@ -64,6 +64,8 @@ namespace BichiKart
         private readonly List<int> _quienesTocaron = new List<int>();
         private float _ventana = -1f;
         private int _ultimaCuenta;
+        private int _seLeCayo = Nadie;
+        private float _esperaTrasCaida;
 
         public Arbitro(ReglasDePartida reglas, int cantidadDeKarts)
         {
@@ -167,6 +169,7 @@ namespace BichiKart
         {
             TiempoDeRonda += dt;
             Proteccion = Mathf.Max(0f, Proteccion - dt);
+            _esperaTrasCaida = Mathf.Max(0f, _esperaTrasCaida - dt);
 
             if (!MuerteSubita && TiempoDeRonda >= _reglas.muerteSubitaTras)
             {
@@ -188,9 +191,15 @@ namespace BichiKart
         {
             if (_toquesComida.Count == 0) return;
 
-            // Si la tocan varios a la vez, se la lleva el de número más bajo (así siempre da lo mismo).
+            // Si la tocan varios a la vez, se la lleva el de número más bajo (así siempre da lo mismo). Al que
+            // se le acaba de caer no la puede volver a agarrar enseguida.
             int quien = int.MaxValue;
-            foreach (int kart in _toquesComida) quien = Mathf.Min(quien, kart);
+            foreach (int kart in _toquesComida)
+            {
+                if (kart == _seLeCayo && _esperaTrasCaida > 0f) continue;
+                quien = Mathf.Min(quien, kart);
+            }
+            if (quien == int.MaxValue) return;
             CambiarDuenio(quien);
             _eventos.Add(new EventoDePartida(TipoDeEvento.Agarro, quien));
         }
@@ -217,6 +226,8 @@ namespace BichiKart
             {
                 int caido = Duenio;
                 Soltar();
+                _seLeCayo = caido;
+                _esperaTrasCaida = _reglas.esperaTrasCaida;
                 _eventos.Add(new EventoDePartida(TipoDeEvento.Cayo, caido));
             }
             else if (_ventana <= 0f)
@@ -278,6 +289,8 @@ namespace BichiKart
             MuerteSubita = false;
             GanadorDeRonda = Nadie;
             Proteccion = 0f;
+            _seLeCayo = Nadie;
+            _esperaTrasCaida = 0f;
             Soltar();
         }
 

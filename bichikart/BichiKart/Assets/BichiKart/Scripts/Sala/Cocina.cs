@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BichiKart
@@ -15,6 +16,26 @@ namespace BichiKart
 
         private Formas _formas;
         private int _huella;
+        private readonly HashSet<Collider> _obstaculos = new HashSet<Collider>();
+        private readonly List<Escondite> _escondites = new List<Escondite>();
+
+        /// <summary>Un obstáculo detrás del cual esconderse: su centro sobre el piso y su radio.</summary>
+        public readonly struct Escondite
+        {
+            public readonly Vector3 Centro;
+            public readonly float Radio;
+
+            public Escondite(Vector3 centro, float radio)
+            {
+                Centro = centro;
+                Radio = radio;
+            }
+        }
+
+        public IReadOnlyList<Escondite> Escondites => _escondites;
+
+        /// <summary>Si choca contra esto, es un obstáculo (no una pared por la que se pueda subir).</summary>
+        public bool EsObstaculo(Collider collider) => collider != null && _obstaculos.Contains(collider);
 
         public AjustesDeSala Ajustes
         {
@@ -156,7 +177,8 @@ namespace BichiKart
             var terron = _formas.Caja("Terrón de azúcar", transform, new Vector3(-m.x * 0.25f, 1.6f, -m.z * 0.22f),
                 Vector3.one * 3.2f, 0.45f, _formas.Mat(Formas.Hex("#fbfaf4"), 0.2f));
             terron.localRotation = Quaternion.Euler(0f, 18f, 0f);
-            terron.gameObject.AddComponent<BoxCollider>();
+            _obstaculos.Add(terron.gameObject.AddComponent<BoxCollider>());
+            _escondites.Add(new Escondite(transform.TransformPoint(new Vector3(terron.localPosition.x, 0f, terron.localPosition.z)), 2.3f));
 
             // Frasco de mermelada con su etiqueta y su tapa.
             var frasco = _formas.Nodo("Frasco de mermelada", transform);
@@ -166,6 +188,8 @@ namespace BichiKart
             var colision = vidrio.gameObject.AddComponent<MeshCollider>();
             colision.sharedMesh = vidrio.GetComponent<MeshFilter>().sharedMesh;
             colision.convex = true;
+            _obstaculos.Add(colision);
+            _escondites.Add(new Escondite(transform.TransformPoint(frasco.localPosition), 2f));
             _formas.Cilindro("Etiqueta", frasco, new Vector3(0f, 2.6f, 0f), new Vector3(4.06f, 0.9f, 4.06f), Quaternion.identity,
                 _formas.Mat(Formas.Hex("#fff4dc"), 0.2f));
             _formas.Cilindro("Tapa", frasco, new Vector3(0f, 5.85f, 0f), new Vector3(4.3f, 0.35f, 4.3f), Quaternion.identity,
@@ -204,6 +228,8 @@ namespace BichiKart
         {
             _formas?.Limpiar();
             _formas = null;
+            _obstaculos.Clear();
+            _escondites.Clear();
         }
     }
 }

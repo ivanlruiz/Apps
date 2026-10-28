@@ -48,6 +48,7 @@ namespace BichiKart.Editor
             var ajustesSala = AsegurarAjustes<AjustesDeSala>("AjustesDeSala");
             var ajustesKart = AsegurarAjustes<AjustesDelKart>("AjustesDelKart");
             var reglas = AsegurarAjustes<ReglasDePartida>("ReglasDePartida");
+            var compu = AsegurarAjustes<AjustesDeCompu>("AjustesDeCompu");
 
             foreach (var raiz in escena.GetRootGameObjects()) Object.DestroyImmediate(raiz);
 
@@ -55,7 +56,7 @@ namespace BichiKart.Editor
             var cocina = CrearCocina(ajustesSala, capaSala);
             new GameObject("Tubería azul").AddComponent<Tuberia>().Configurar(cocina);
             var participantes = new List<Participante>();
-            for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, capaKarts, capaSala));
+            for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, compu, capaKarts, capaSala));
             var comida = CrearComida(cocina);
             var partida = CrearPartida(reglas, cocina, comida, participantes);
             var camara = CrearCamaras(participantes[0].Kart, capaSala);
@@ -84,7 +85,7 @@ namespace BichiKart.Editor
         }
 
         /// <summary>
-        /// Los cuatro karts: el primero lo maneja el jugador y los otros son rivales de práctica. Los colores
+        /// Los cuatro karts: el primero lo maneja el jugador y los otros son rivales de la compu. Los colores
         /// son los del diseño (cada kart contrasta con su bichito).
         /// </summary>
         private static readonly (string nombre, string carroceria, string bichito, float tonoBocina)[] Bichitos =
@@ -95,7 +96,7 @@ namespace BichiKart.Editor
             ("Mukko", "#ff7eb6", "#7be08a", 520f),
         };
 
-        private static Participante CrearKart(Cocina cocina, int numero, AjustesDelKart ajustes, int capaKarts, int capaSala)
+        private static Participante CrearKart(Cocina cocina, int numero, AjustesDelKart ajustes, AjustesDeCompu compu, int capaKarts, int capaSala)
         {
             var (nombre, carroceria, bichito, tonoBocina) = Bichitos[numero];
             var salida = cocina.Salida(numero);
@@ -117,7 +118,7 @@ namespace BichiKart.Editor
             var participante = raiz.AddComponent<Participante>();
             participante.Configurar(nombre, Formas.Hex(bichito));
             if (numero == 0) raiz.AddComponent<FuenteTeclado>();
-            else raiz.AddComponent<FuentePractica>();
+            else raiz.AddComponent<FuenteCompu>().Configurar(compu);
             raiz.AddComponent<AudioSource>();
             raiz.AddComponent<SonidosDelKart>().Configurar(tonoBocina);
             return participante;
@@ -178,7 +179,8 @@ namespace BichiKart.Editor
             seguimiento.QuaternionDamping = 0.25f;
             orbita.TrackerSettings = seguimiento;
             orbita.HorizontalAxis = Eje(0f, new Vector2(-180f, 180f), true);
-            orbita.VerticalAxis = Eje(14f, new Vector2(-5f, 55f), false);
+            // Un poco desde arriba, para ver por encima de la comida cuando la llevás.
+            orbita.VerticalAxis = Eje(21f, new Vector2(-5f, 55f), false);
 
             var mira = go.AddComponent<CinemachineRotationComposer>();
             mira.TargetOffset = new Vector3(0f, 1.3f, 0f);
