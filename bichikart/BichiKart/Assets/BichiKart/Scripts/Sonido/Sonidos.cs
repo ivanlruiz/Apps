@@ -50,6 +50,20 @@ namespace BichiKart
             });
         }
 
+        /// <summary>Quejido ofendido que baja, para el que se queda sin la comida.</summary>
+        public static AudioClip Queja(float tono = 520f)
+        {
+            const float duracion = 0.38f;
+            float fase = 0f;
+            return Crear("Queja", duracion, t =>
+            {
+                float avance = t / duracion;
+                float f = tono * Mathf.Lerp(1.5f, 0.75f, avance) * (1f + 0.05f * Mathf.Sin(t * 2f * Mathf.PI * 11f));
+                fase += 2f * Mathf.PI * f / Frecuencia;
+                return (float)Math.Tanh(Mathf.Sin(fase) * 2.5f) * Envolvente(t, duracion, 0.01f, 0.12f) * 0.35f;
+            });
+        }
+
         /// <summary>"Fiuuu" que sube, para el mini turbo.</summary>
         public static AudioClip Turbo()
         {

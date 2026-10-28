@@ -33,6 +33,7 @@ namespace BichiKart
         private float _despegue;
         private float _cargaDerrape;
         private float _turbo;
+        private float _aturdido;
 
         /// <summary>De dónde salen las órdenes. Si no se asigna, se busca en el mismo objeto.</summary>
         public IFuenteDeOrdenes Fuente { get; set; }
@@ -72,6 +73,29 @@ namespace BichiKart
         public float CargaDerrape => ajustes != null && ajustes.cargaMiniTurbo > 0f ? Mathf.Clamp01(_cargaDerrape / ajustes.cargaMiniTurbo) : 0f;
 
         public bool EnTurbo => _turbo > 0f;
+
+        /// <summary>Ignora las órdenes (por ejemplo, durante la cuenta regresiva).</summary>
+        public bool Quieto { get; set; }
+
+        /// <summary>Cuánto más rápido o más lento va: lo pone la partida según quién tiene la comida.</summary>
+        public float MultiplicadorVelocidad { get; set; } = 1f;
+
+        /// <summary>
+        /// Empuja el kart lejos de un punto (hacia atrás y un poco hacia arriba, para que se note) y lo deja
+        /// unos segundos sin poder manejar.
+        /// </summary>
+        public void Despedir(Vector3 desde, float empuje, float salto, float aturdido)
+        {
+            var lejos = Vector3.ProjectOnPlane(_rb.position - desde, _arriba);
+            if (lejos.sqrMagnitude < 1e-4f) lejos = -_adelante;
+            _rb.linearVelocity = lejos.normalized * empuje + _arriba * salto + Vector3.ProjectOnPlane(_rb.linearVelocity, _arriba) * 0.3f;
+            EnSuelo = false;
+            _despegue = TiempoDeDespegue;
+            _aturdido = Mathf.Max(_aturdido, aturdido);
+            Derrapando = false;
+            DireccionDerrape = 0;
+            _cargaDerrape = 0f;
+        }
 
         /// <summary>Lo usa la herramienta que arma la escena.</summary>
         public void Configurar(AjustesDelKart nuevosAjustes, Transform nuevoChasis, LayerMask nuevaCapaSuelo)
@@ -122,7 +146,7 @@ namespace BichiKart
             _arriba = Vector3.up;
             _adelante = Vector3.ProjectOnPlane(mirando, _arriba).normalized;
             _rotacionChasis = Quaternion.LookRotation(_adelante, _arriba);
-            _despegue = _turbo = _cargaDerrape = 0f;
+            _despegue = _turbo = _cargaDerrape = _aturdido = 0f;
             Derrapando = false;
             DireccionDerrape = 0;
 
@@ -140,6 +164,8 @@ namespace BichiKart
         {
             float dt = Time.fixedDeltaTime;
             var ordenes = Fuente != null ? Fuente.LeerOrdenes() : default;
+            _aturdido = Mathf.Max(0f, _aturdido - dt);
+            if (Quieto || _aturdido > 0f) ordenes = default;
             UltimasOrdenes = ordenes;
 
             // El radio se puede cambiar mientras se juega.
@@ -313,14 +339,15 @@ namespace BichiKart
 
         private void CalcularAvance(float avance, float vAdelante, out float objetivo, out float tasa)
         {
+            float maxima = ajustes.velocidadMaxima * MultiplicadorVelocidad;
             if (EnTurbo && avance > -0.01f)
             {
-                objetivo = ajustes.velocidadMaxima * ajustes.velocidadTurbo;
+                objetivo = maxima * ajustes.velocidadTurbo;
                 tasa = ajustes.aceleracionTurbo;
             }
             else if (avance > 0.01f)
             {
-                objetivo = ajustes.velocidadMaxima * avance;
+                objetivo = maxima * avance;
                 tasa = vAdelante < 0f ? ajustes.frenado : ajustes.aceleracion;
             }
             else if (avance < -0.01f)

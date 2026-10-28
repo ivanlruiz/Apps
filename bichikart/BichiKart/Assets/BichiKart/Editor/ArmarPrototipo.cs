@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Cinemachine;
 using Unity.Cinemachine.TargetTracking;
 using UnityEditor;
@@ -13,8 +14,9 @@ namespace BichiKart.Editor
 {
     /// <summary>
     /// Menú "BichiKart → Armar escena Prototipo": borra todo lo que hay en la escena Prototipo y la vuelve a
-    /// armar con la Cocina, el kart de Blip, la cámara y la luz. Los números del manejo y las medidas de la
-    /// sala quedan en Assets/BichiKart/Ajustes y no se pisan.
+    /// armar con la Cocina, los cuatro karts, la rebanada de pan, la partida, la cámara, la interfaz y la
+    /// luz. Los números del manejo, las reglas y las medidas de la sala quedan en Assets/BichiKart/Ajustes y
+    /// no se pisan.
     /// </summary>
     public static class ArmarPrototipo
     {
@@ -45,13 +47,18 @@ namespace BichiKart.Editor
             int capaKarts = AsegurarCapa("Karts");
             var ajustesSala = AsegurarAjustes<AjustesDeSala>("AjustesDeSala");
             var ajustesKart = AsegurarAjustes<AjustesDelKart>("AjustesDelKart");
+            var reglas = AsegurarAjustes<ReglasDePartida>("ReglasDePartida");
 
             foreach (var raiz in escena.GetRootGameObjects()) Object.DestroyImmediate(raiz);
 
             ConfigurarAmbiente();
             var cocina = CrearCocina(ajustesSala, capaSala);
-            var kart = CrearKart(cocina, ajustesKart, capaKarts, capaSala);
-            CrearCamaras(kart, capaSala);
+            var participantes = new List<Participante>();
+            for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, capaKarts, capaSala));
+            var comida = CrearComida(cocina);
+            var partida = CrearPartida(reglas, cocina, comida, participantes);
+            var camara = CrearCamaras(participantes[0].Kart, capaSala);
+            CrearInterfaz(partida, camara);
             CrearVolumen();
 
             EditorSceneManager.MarkSceneDirty(escena);
@@ -75,11 +82,24 @@ namespace BichiKart.Editor
             return cocina;
         }
 
-        private static Kart CrearKart(Cocina cocina, AjustesDelKart ajustes, int capaKarts, int capaSala)
+        /// <summary>
+        /// Los cuatro karts: el primero lo maneja el jugador y los otros son rivales de práctica. Los colores
+        /// son los del diseño (cada kart contrasta con su bichito).
+        /// </summary>
+        private static readonly (string nombre, string carroceria, string bichito, float tonoBocina)[] Bichitos =
         {
-            var salida = cocina.Salida(0);
+            ("Blip", "#ff9f1c", "#8fd3ff", 620f),
+            ("Pulpi", "#3ec1f0", "#ff8fc8", 700f),
+            ("Zorbo", "#ffd23f", "#9b6bff", 440f),
+            ("Mukko", "#ff7eb6", "#7be08a", 520f),
+        };
 
-            var raiz = new GameObject("Kart de Blip") { layer = capaKarts };
+        private static Participante CrearKart(Cocina cocina, int numero, AjustesDelKart ajustes, int capaKarts, int capaSala)
+        {
+            var (nombre, carroceria, bichito, tonoBocina) = Bichitos[numero];
+            var salida = cocina.Salida(numero);
+
+            var raiz = new GameObject($"Kart de {nombre}") { layer = capaKarts };
             raiz.transform.position = salida.position + Vector3.up * ajustes.radioEsfera;
             raiz.AddComponent<Rigidbody>().mass = 1f;
             raiz.AddComponent<SphereCollider>().radius = ajustes.radioEsfera;
@@ -87,17 +107,42 @@ namespace BichiKart.Editor
             var chasis = new GameObject("Chasis") { layer = capaKarts };
             chasis.transform.SetParent(raiz.transform, false);
             chasis.transform.SetPositionAndRotation(salida.position, salida.rotation);
-            chasis.AddComponent<ModeloKart>();
+            var modelo = chasis.AddComponent<ModeloKart>();
+            modelo.ColorCarroceria = Formas.Hex(carroceria);
+            modelo.ColorBichito = Formas.Hex(bichito);
 
             var kart = raiz.AddComponent<Kart>();
             kart.Configurar(ajustes, chasis.transform, 1 << capaSala);
-            raiz.AddComponent<FuenteTeclado>();
+            var participante = raiz.AddComponent<Participante>();
+            participante.Configurar(nombre, Formas.Hex(bichito));
+            if (numero == 0) raiz.AddComponent<FuenteTeclado>();
+            else raiz.AddComponent<FuentePractica>();
             raiz.AddComponent<AudioSource>();
-            raiz.AddComponent<SonidosDelKart>();
-            return kart;
+            raiz.AddComponent<SonidosDelKart>().Configurar(tonoBocina);
+            return participante;
         }
 
-        private static void CrearCamaras(Kart kart, int capaSala)
+        private static Comida CrearComida(Cocina cocina)
+        {
+            var go = new GameObject("Rebanada de pan");
+            go.transform.position = cocina.transform.position + Vector3.up * 1.8f;
+            return go.AddComponent<Comida>();
+        }
+
+        private static Partida CrearPartida(ReglasDePartida reglas, Cocina cocina, Comida comida, List<Participante> participantes)
+        {
+            var partida = new GameObject("Partida").AddComponent<Partida>();
+            partida.Configurar(reglas, cocina, comida, participantes);
+            return partida;
+        }
+
+        private static void CrearInterfaz(Partida partida, Camera camara)
+        {
+            var go = new GameObject("Interfaz", typeof(RectTransform)) { layer = LayerMask.NameToLayer("UI") };
+            go.AddComponent<Interfaz>().Configurar(partida, camara);
+        }
+
+        private static Camera CrearCamaras(Kart kart, int capaSala)
         {
             var principal = new GameObject("Main Camera") { tag = "MainCamera" };
             var camara = principal.AddComponent<Camera>();
@@ -151,6 +196,7 @@ namespace BichiKart.Editor
             paredes.AvoidObstacles = esquivar;
 
             go.AddComponent<CamaraDelKart>();
+            return camara;
         }
 
         private static InputAxis Eje(float centro, Vector2 rango, bool vuelta)

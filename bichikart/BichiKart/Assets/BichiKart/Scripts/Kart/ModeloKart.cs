@@ -21,6 +21,9 @@ namespace BichiKart
         [Tooltip("Color de la carrocería. Las ruedas son siempre negro azulado.")]
         [SerializeField] private Color colorCarroceria = new Color(1f, 0.624f, 0.11f);
 
+        [Tooltip("Color del bichito. Por ahora todos tienen la forma de Blip; las formas de cada uno llegan con el arte.")]
+        [SerializeField] private Color colorBichito = new Color(0.56f, 0.83f, 1f);
+
         private Formas _formas;
         private Kart _kart;
         private Transform _cuerpo;
@@ -29,7 +32,7 @@ namespace BichiKart
         private readonly List<Transform> _fuegos = new List<Transform>();
         private Material _materialChispas;
         private Transform _antena;
-        private Color _colorArmado;
+        private Color _colorArmado, _colorBichitoArmado;
         private float _vueltaRuedas;
         private float _velocidadAnterior;
         private float _inclinacionAntena;
@@ -45,6 +48,16 @@ namespace BichiKart
             }
         }
 
+        public Color ColorBichito
+        {
+            get => colorBichito;
+            set
+            {
+                colorBichito = value;
+                if (isActiveAndEnabled) Construir();
+            }
+        }
+
         private void OnEnable()
         {
             _kart = GetComponentInParent<Kart>();
@@ -55,7 +68,7 @@ namespace BichiKart
 
         private void Update()
         {
-            if (colorCarroceria != _colorArmado) Construir();
+            if (colorCarroceria != _colorArmado || colorBichito != _colorBichitoArmado) Construir();
             if (Application.isPlaying) Animar(Time.deltaTime);
         }
 
@@ -107,6 +120,7 @@ namespace BichiKart
             Limpiar();
             _formas = new Formas();
             _colorArmado = colorCarroceria;
+            _colorBichitoArmado = colorBichito;
             _cuerpo = _formas.Nodo("Cuerpo", transform);
             ArmarKart();
             ArmarEfectos();
@@ -170,10 +184,10 @@ namespace BichiKart
             // Blip: bolita celeste de un ojo, con orejitas y antena de resorte con bolita naranja.
             var blip = _formas.Nodo("Blip", _cuerpo);
             blip.localPosition = new Vector3(0f, 1.3f, -0.2f);
-            var celeste = _formas.Mat(Formas.Hex("#8fd3ff"), 0.5f);
-            _formas.Esfera("Cuerpo", blip, Vector3.zero, Vector3.one * 0.9f, celeste);
-            _formas.Esfera("Oreja izquierda", blip, new Vector3(-0.45f, 0.1f, 0f), Vector3.one * 0.25f, celeste);
-            _formas.Esfera("Oreja derecha", blip, new Vector3(0.45f, 0.1f, 0f), Vector3.one * 0.25f, celeste);
+            var piel = _formas.Mat(colorBichito, 0.5f);
+            _formas.Esfera("Cuerpo", blip, Vector3.zero, Vector3.one * 0.9f, piel);
+            _formas.Esfera("Oreja izquierda", blip, new Vector3(-0.45f, 0.1f, 0f), Vector3.one * 0.25f, piel);
+            _formas.Esfera("Oreja derecha", blip, new Vector3(0.45f, 0.1f, 0f), Vector3.one * 0.25f, piel);
             _formas.Esfera("Ojo", blip, new Vector3(0f, 0.08f, 0.33f), Vector3.one * 0.42f, _formas.Mat(Color.white, 0.6f));
             _formas.Esfera("Pupila", blip, new Vector3(0f, 0.08f, 0.52f), Vector3.one * 0.2f, _formas.Mat(Formas.Hex("#1d2340"), 0.8f));
             _antena = _formas.Nodo("Antena", blip);

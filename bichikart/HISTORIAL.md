@@ -358,7 +358,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
    - **Hito 1 (hecho). La sala y el kart en el piso:** la Cocina como caja cerrada con los rincones redondeados por dentro, 2 o 3 obstáculos, el kart (una esfera física invisible con el kart de Blip encima), W/S/A/D y la cámara detrás, que gira con el mouse y vuelve sola. Ver la sección 9.
    - **Hito 2 (hecho). Paredes, techo y gravedad:** ruedas magnéticas, cámara que gira con vos (con anti-mareo) y Ctrl.
    - **Hito 3 (hecho). Salto, derrape y bocina.**
-   - **Hito 4. El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
+   - **Hito 4. El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica. **Parte 1 hecha:** el árbitro con todas las reglas, el pan, los 3 rivales de práctica y una interfaz de texto. **Falta la parte 2:** barra, aro, flecha y minimapa.
    - **Hito 5. La compu de verdad:** los rivales usan paredes, techo y gravedad.
    - **Hito 6. La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo.
    - **Hito 7. Ajuste final.**
@@ -373,7 +373,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 4 de la etapa 2 (los hitos 0 a 3 están hechos).
+**Ahora:** parte 2 del hito 4 de la etapa 2: barra, aro, flecha y minimapa (los hitos 0 a 3 y la parte 1 del 4 están hechos).
 
 ## 7. Pendientes del diseño
 
@@ -415,6 +415,8 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 Para pasar a las paredes y al techo, alcanza con manejar hacia un rincón: las ruedas son magnéticas.
 
+La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de práctica (Pulpi, Zorbo y Mukko). Arriba se ve quién tiene el pan y cuánto le falta, en el medio los avisos y a la izquierda el marcador de rondas.
+
 Si algo de la escena se rompe, el menú **BichiKart → Armar escena Prototipo** la vuelve a armar de cero.
 
 ### Valores elegidos (se pueden cambiar mientras se juega)
@@ -425,6 +427,7 @@ Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian 
 |---|---|---|
 | `AjustesDeSala` | Medidas de la Cocina y radio de los rincones | 40 × 14 × 32, rincones de 3,5 |
 | `AjustesDelKart` | Velocidad, aceleración, frenado, giro, agarre, gravedad, salto, derrape y turbo | Máxima 16, llega en ~1 s, marcha atrás 7, dobla 150° por segundo. El mini turbo se carga con 0,9 s de derrape y lleva a 21,6 durante 0,8 s |
+| `ReglasDePartida` | Tiempo para ganar, rondas, muerte súbita, protección, doble toque, velocidades con y sin el pan, empujones y pausas | 15/20/20 s según jugadores, al mejor de 3, muerte súbita a los 3 min (5 s), protección 1 s, doble toque 0,1 s, dueño ×0,85 y perseguidores ×1,10, cuenta de 3 s |
 
 La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y vuelve sola atrás un segundo después de soltar el mouse. En el objeto **Cámara del kart** se puede tildar **Anti Mareo** para que acompañe más despacio los giros.
 
@@ -434,7 +437,9 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 - **El kart de Blip:** una esfera física invisible con el kart encima. Las ruedas giran con la velocidad, las de adelante doblan y la antena se bambolea. Al derrapar se cruza y le salen chispas celestes, que se ponen naranjas con el mini turbo cargado; con el turbo, los escapes tiran fuego.
 - **Ruedas magnéticas:** apoyado, la gravedad tira hacia la superficie que el kart tiene abajo. Al pasar por un rincón redondeado, sube por la pared y sigue hasta el techo.
 - **Botón de gravedad:** solo apoyado y con una espera de 0,4 s. El kart despega hacia la superficie de enfrente, gira como un tonel en el aire y aterriza sin perder velocidad.
-- **Sonidos generados por código:** bocina, despegue de la gravedad, salto y mini turbo.
+- **Sonidos generados por código:** bocina, despegue de la gravedad, salto y mini turbo; "plop" al agarrar el pan y queja al perderlo.
+- **La partida:** un **árbitro** (C# puro, con pruebas automáticas) lleva todas las reglas: cuenta regresiva, agarrar, aguantar, robar con un toque, protección de 1 s, caída por doble toque, más lento con el pan y más rápido sin él, al mejor de 3 y muerte súbita. La escena le cuenta los toques y aplica lo que pasa: el robado sale despedido y los perseguidores rebotan entre ellos. Los toques entre karts se miden como entre cápsulas (la forma alargada del kart).
+- **Rivales de práctica:** buscan el pan, persiguen al dueño, escapan cuando lo tienen y se destraban yendo marcha atrás. Por ahora todos tienen la forma de Blip, con sus colores.
 
 ### Lecciones del hito 1
 
@@ -446,3 +451,8 @@ La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y 
 - **Derrape:** si la velocidad no gira con el kart, el derrape frena de golpe (de 16 a 4) y nunca carga el turbo. Quedó así: el kart dobla más cerrado y se desliza un poco hacia afuera de la curva, sin perder velocidad.
 - **Obstáculos:** van en las diagonales, para que no tapen el centro ni las salidas.
 - **Revisión con un agente:** encontró que las texturas se amontonaban en los rincones redondeados (corregido, con pruebas), que el juego compilado no iba a tener los shaders (ahora hay materiales base en `Assets/BichiKart/Resources/Formas`) y otros detalles menores.
+
+### Lecciones del hito 4
+
+- **Unity en segundo plano:** si la ventana de Unity no está al frente, el juego en Play no avanza. Se activó **Run In Background** (también hace falta para el online), y para probar sin traer Unity al frente Claude pausa el juego y lo avanza cuadro por cuadro.
+- Lo que se cambia en un archivo de ajustes **durante Play queda guardado** al salir: para probar con otros valores hay que acordarse de volverlos atrás.

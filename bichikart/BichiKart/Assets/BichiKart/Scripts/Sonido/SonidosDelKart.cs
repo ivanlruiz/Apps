@@ -4,7 +4,7 @@ namespace BichiKart
 {
     /// <summary>
     /// Sonidos de un kart: la bocina (cada bichito tiene su tono), el despegue del botón de gravedad, el
-    /// salto y el mini turbo.
+    /// salto, el mini turbo, el "plop" al agarrar la comida y la queja al perderla.
     /// </summary>
     [RequireComponent(typeof(Kart), typeof(AudioSource))]
     public sealed class SonidosDelKart : MonoBehaviour
@@ -12,9 +12,12 @@ namespace BichiKart
         [Tooltip("Tono de la bocina, en vueltas por segundo. Más alto es más agudo.")]
         [SerializeField] private float tonoBocina = 620f;
 
+        /// <summary>Lo usa la herramienta que arma la escena.</summary>
+        public void Configurar(float nuevoTono) => tonoBocina = nuevoTono;
+
         private Kart _kart;
         private AudioSource _parlante;
-        private AudioClip _bocina, _gravedad, _salto, _turbo;
+        private AudioClip _bocina, _gravedad, _salto, _turbo, _plop, _queja;
 
         private void Awake()
         {
@@ -27,7 +30,15 @@ namespace BichiKart
             _gravedad = Sonidos.Succion();
             _salto = Sonidos.Plop();
             _turbo = Sonidos.Turbo();
+            _plop = Sonidos.Plop();
+            _queja = Sonidos.Queja(tonoBocina * 0.9f);
         }
+
+        /// <summary>"Plop" del que agarra o roba la comida.</summary>
+        public void Agarrar() => _parlante.PlayOneShot(_plop);
+
+        /// <summary>Grito ofendido del que se queda sin la comida.</summary>
+        public void Quejarse() => _parlante.PlayOneShot(_queja);
 
         private void OnEnable()
         {
@@ -47,7 +58,7 @@ namespace BichiKart
 
         private void OnDestroy()
         {
-            foreach (var clip in new[] { _bocina, _gravedad, _salto, _turbo })
+            foreach (var clip in new[] { _bocina, _gravedad, _salto, _turbo, _plop, _queja })
                 if (clip != null) Destroy(clip);
         }
 
