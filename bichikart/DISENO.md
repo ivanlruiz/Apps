@@ -16,7 +16,7 @@ Este documento junta lo que se decidió hasta ahora. Todavía no hay nada progra
 | Motor | Unity 6 |
 | Plataformas | Primero PC (teclado y mouse, también joystick). Después celular |
 | Tiendas | Steam, itch.io y Google Play |
-| Estilo visual | Caricatura redondita (tipo Fall Guys o Mario Kart). Se empieza con formas simples y el arte lindo viene después |
+| Estilo visual | Caricatura redondita (tipo Fall Guys o Mario Kart), con URP y sombreado caricatura. Se empieza con formas simples y el arte lindo viene después (ver **Arte y estilo**) |
 | Mundo | Bichitos del tamaño de una hormiga dentro de una casa que flota en el espacio; por las ventanas se ven estrellas y planetas |
 | Idiomas | Varios (español, inglés, portugués y más) |
 | Modelo | Gratis, con compras estéticas (paquetes y pase de temporada). Nunca se vende algo que ayude a ganar |
@@ -71,6 +71,11 @@ Se puede cambiar al crear la partida. La idea original contemplaba 25 segundos p
 - **Flecha** en el borde de la pantalla que apunta al dueño.
 - **Minimapa** abajo a la derecha.
 
+### Tiempo de aguante en pantalla
+
+- **Barra** inflada arriba, con la carita del dueño avanzando hacia la meta.
+- **Aro** alrededor de la comida, arriba del kart, que se va llenando.
+
 ## Modos de juego
 
 | Modo | Cómo se gana |
@@ -116,14 +121,14 @@ En equipos, cada uno mantiene su kart, pero lleva una **banderita y un aro de lu
 
 ## Mapas
 
-Cada mapa tiene versión chica y grande, con su comida típica.
+Cada mapa es una **sala cerrada** (piso, paredes y techo), no un circuito abierto, porque la gracia es pegarse a paredes y techo para escapar. Tiene versión chica y grande, y su comida típica.
 
-| Mapa | Zonas | Comida |
-|---|---|---|
-| **Cocina** | Mesada y pileta, heladera abierta (piso helado), alacena, mesa con mantel | Miguita de pan |
-| **Baño** | Bañadera, lavatorio, inodoro (remolino al tirar la cadena), botiquín | Caramelo |
-| **Cuarto de juguetes** | Pista de autitos, castillo de bloques | Galletita |
-| **Nave espacial** | Zonas sin gravedad, botón que da vuelta la gravedad de toda la sala, ventanal gigante | Comida espacial en tubo |
+| Mapa | Zonas | Comida | Ambientación |
+|---|---|---|---|
+| **Cocina** | Mesada y pileta, heladera abierta (piso helado), alacena, mesa con mantel | Miguita de pan | Mesada de granito, heladera gigante, mantel a cuadros, frascos y tostadora; ventana enorme al espacio |
+| **Baño** | Bañadera, lavatorio, inodoro (remolino al tirar la cadena), botiquín | Caramelo | Baldosas, chorros de agua, cepillo de dientes enorme; el caramelo sobre una esponja gigante |
+| **Cuarto de juguetes** | Pista de autitos, castillo de bloques | Galletita | Bloques, dados y autitos de juguete; la galletita sobre una alfombra de juego |
+| **Nave espacial** | Zonas sin gravedad, botón que da vuelta la gravedad de toda la sala, ventanal gigante | Comida espacial en tubo | Consolas gigantes, cables y compuertas; el tubo de comida sobre un soporte metálico |
 
 Elementos vivos en los mapas:
 
@@ -170,7 +175,7 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 
 **Kart**
 
-- Colores (las ruedas siempre son negras).
+- Colores de la carrocería (las ruedas son siempre negro azulado).
 - Calcos: números y llamas, comida, espaciales y caras de bichitos.
 - Detalles: alerón y bocina.
 - Estelas: burbujas y estrellitas.
@@ -231,13 +236,18 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 
 ### Menú principal
 
-La casa vista desde afuera, flotando en el espacio. Cada cuarto es un modo:
+La casa vista desde afuera, flotando en el espacio. La cámara la rodea despacio y, al elegir una opción, viaja hasta ese cuarto con un movimiento de cine. Cada cuarto es un modo:
 
 - Cocina: historia.
 - Living: partida rápida.
 - Garaje: personalizar.
 - Antena del techo: online.
 - Ventana con trofeos: copas.
+- Botones de Opciones y Salir abajo a la derecha.
+
+![Concepto del menú principal: la casa flotando en el espacio con cada cuarto como opción](imagenes/menu-principal.png)
+
+*Concepto del menú principal hecho con Gemini.*
 
 ### Repeticiones
 
@@ -249,6 +259,53 @@ La casa vista desde afuera, flotando en el espacio. Cada cuarto es un modo:
 - Modo para daltonismo.
 - Teclas a gusto.
 - Subtítulos.
+
+## Arte y estilo
+
+Propuesta hecha con Gemini, ajustada a lo decidido.
+
+### Cómo lograr el estilo en Unity 6
+
+- **URP** (Universal Render Pipeline): liviano para celular e ideal para este estilo.
+- **Sombreado caricatura** (toon) con un **contorno** fino, para que los karts diminutos resalten contra los muebles gigantes.
+- **Formas biseladas:** nada de esquinas filosas. Para el prototipo, ProBuilder alcanza para redondear formas.
+- **Iluminación:** luz cálida (amarillos y naranjas) adentro de la casa, contra la luz fría azul y violeta del espacio que entra por las ventanas.
+- **Oclusión ambiental** en el postprocesado, para que todo se vea bien apoyado en pisos y paredes.
+
+### Paleta
+
+- Colores muy saturados con base pastel: azul eléctrico, rosa chicle, verde menta, naranja vibrante.
+- Sin negros puros ni grises oscuros: las sombras y las partes mecánicas van en azul noche o violeta muy oscuro.
+
+### Bichitos
+
+Todos se arman con esferas, cápsulas y formas orgánicas simples.
+
+| Bichito | Forma | Cómo va en el kart |
+|---|---|---|
+| **Blip** | Bolita verde menta con un ojo central enorme y una antena elástica con bolita naranja que vibra al acelerar | En el centro, agarrando el volante con energía y rebotando |
+| **Pulpi** | Cúpula rosa con cuatro tentáculos cortos | Sentado alto: dos tentáculos en el volante y dos gesticulando o tocando palancas |
+| **Zorbo** | Cápsula violeta con tres ojos en fila arriba y dos cuernitos | Tirado hacia atrás, con una mano en el volante y cabeceando al ritmo del funk |
+| **Mukko** | Gota verde traslúcida y viscosa, con los ojos en dos antenas flexibles que se mueven con la inercia | Desparramado sobre el kart, con manitos de baba pegadas al volante |
+| **Kosmo** | Cápsula blanca de traje espacial con un casco esférico enorme; adentro solo se ven dos ojitos brillantes | Recto y formal, con las dos manos enguantadas en el volante |
+| **Klank** | Cajita o cilindro de metal cobre oxidado, con esquinas redondeadas y una pantallita con ojos y boca de píxeles celestes | Rígido, con movimientos a los saltos |
+
+### Karts
+
+- **Chasis:** bloque de plástico grueso y compacto, con paragolpes redondeado gris claro o metálico.
+- **Motor:** chiquito, atrás, con escapes grandes.
+- **Ruedas:** goma negro azulado, anchas.
+- **Alerón:** de juguete, con bordes de goma, que vibra con la velocidad.
+- **Detalles cómicos:** antenas con resorte, alerones dobles, escapes desproporcionados.
+- **Calcos:** grandes y simples, para distinguirse de lejos.
+- **Estelas:** burbujas transparentes de colores y estrellitas o chispas.
+
+### Interfaz
+
+- Botones y paneles con volumen, como inflados o de plástico, sin tapar la acción.
+- La flecha al dueño de la comida es 3D, de color vivo con borde blanco.
+- El minimapa tiene un estilo holográfico de juguete, con las caritas de los bichitos y la comida titilando.
+- El logo de **BichiKart!** es naranja, con ojitos y antenas (ver el concepto del menú).
 
 ## Sonido y música
 
@@ -268,7 +325,7 @@ Antes de cada etapa se revisa y se aprueba qué se va a hacer.
 
 ## Pendientes
 
-- **Diseño visual** (se está consultando aparte).
+- **Imágenes de concepto** de los bichitos y de los 4 mapas (hechas con Gemini, falta sumarlas).
 - **Controles:** botones del joystick y detalle de los controles de celular.
 - **Desafíos:** lista concreta y sus premios.
 - **Tutorial:** contenido paso a paso.
