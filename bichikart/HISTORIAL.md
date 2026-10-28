@@ -354,8 +354,8 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 1. ~~Documento de diseño~~ (hecho).
 2. **Prototipo jugable contra la compu** con formas simples. Sin online, poderes ni arte final, pero con el código preparado para la red (ver **Notas técnicas** en `DISENO.md`). Se hace por hitos: Claude los avanza solo, los prueba en Unity y le pregunta al usuario solo lo de diseño.
-   - **Hito 0. Preparar el proyecto:** conexión con Unity, versión corregida en los documentos, paquetes (Cinemachine 3.1.7, Splines 2.8.4 e Input System 1.19.0), assembly definitions y escena `Prototipo`.
-   - **Hito 1. La sala y el kart en el piso:** la Cocina como caja cerrada con los rincones redondeados por dentro, 2 o 3 obstáculos, el kart (una esfera física invisible con el kart de Blip encima), W/S/A/D y la cámara detrás, que gira con el mouse y vuelve sola.
+   - **Hito 0 (hecho). Preparar el proyecto:** conexión con Unity, versión corregida en los documentos, paquetes (Cinemachine 3.1.7, Splines 2.8.4 e Input System 1.19.0), assembly definitions y escena `Prototipo`.
+   - **Hito 1 (hecho). La sala y el kart en el piso:** la Cocina como caja cerrada con los rincones redondeados por dentro, 2 o 3 obstáculos, el kart (una esfera física invisible con el kart de Blip encima), W/S/A/D y la cámara detrás, que gira con el mouse y vuelve sola. Ver la sección 9.
    - **Hito 2. Paredes, techo y gravedad:** ruedas magnéticas, cámara que gira con vos (con anti-mareo) y Ctrl.
    - **Hito 3. Salto, derrape y bocina.**
    - **Hito 4. El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
@@ -373,7 +373,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 1 de la etapa 2 (el hito 0 está hecho).
+**Ahora:** hito 2 de la etapa 2 (los hitos 0 y 1 están hechos).
 
 ## 7. Pendientes del diseño
 
@@ -394,3 +394,34 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 - **Mostrar imágenes** ayuda mucho a decidir.
 - Revisar las propuestas de otras IA **contra lo ya decidido**. Gemini propuso circuitos abiertos y caños tipo Mario, y hubo que corregirlo.
 - Cuidar que los diseños **no se parezcan a personajes o juegos conocidos** (Mike Wazowski, los caños de Mario).
+
+## 9. El prototipo (etapa 2)
+
+### Cómo probarlo
+
+1. En Unity, abrir la escena `Assets/Scenes/Prototipo` y apretar **Play**.
+2. Hacer **clic** en la ventana del juego para que el mouse mueva la cámara. **Escape** suelta el mouse.
+3. Controles: **W/S** o flechas (acelerar, frenar y marcha atrás), **A/D** o flechas (doblar). También anda con joystick: gatillos para acelerar y frenar, stick izquierdo para doblar y stick derecho para la cámara.
+
+Si algo de la escena se rompe, el menú **BichiKart → Armar escena Prototipo** la vuelve a armar de cero.
+
+### Valores elegidos (se pueden cambiar mientras se juega)
+
+Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian los números en el Inspector.
+
+| Archivo | Qué tiene | Valores de arranque |
+|---|---|---|
+| `AjustesDeSala` | Medidas de la Cocina y radio de los rincones | 40 × 14 × 32, rincones de 3,5 |
+| `AjustesDelKart` | Velocidad, aceleración, frenado, giro, agarre, gravedad | Máxima 16, llega en ~1 s, marcha atrás 7, dobla 150° por segundo |
+
+La cámara va a 6,5 detrás del kart y vuelve sola atrás un segundo después de soltar el mouse.
+
+### Qué hay en la escena
+
+- **La Cocina:** sala cerrada con rincones redondeados. El piso es la mesada de granito, el techo la alacena de madera, un costado la heladera y el resto azulejos, con la ventana al espacio. Tiene una pileta plana, un **terrón de azúcar** y un **frasco de mermelada** para esconderse, migas de adorno y 4 luces cálidas y frías (solo una con sombra).
+- **El kart de Blip:** una esfera física invisible con el kart encima. Las ruedas giran con la velocidad, las de adelante doblan y la antena se bambolea.
+
+### Lecciones del hito 1
+
+- Se probó en Play con un **piloto automático** que maneja solo y anota posición y velocidad, a través de la conexión con Unity.
+- Las salidas de los karts tienen que dejar lugar atrás para la cámara: si no, la cámara choca con la pared y queda pegada al kart.

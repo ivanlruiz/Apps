@@ -7,7 +7,9 @@ Juego 3D de karts donde bichitos diminutos se pelean por una comida gigante dent
 
 ## Estado
 
-Proyecto **base**: abre en Unity 6 con URP configurado y tiene una **sala de prueba**. La sala es un rincón de la cocina con la mesada, la pileta, la heladera gigante, la ventana al espacio, las rejillas de los caños, el kart de Blip y la rebanada de pan, todo con formas simples. Todavía no se maneja: eso llega con el prototipo.
+**Prototipo en construcción** (etapa 2). En la escena `Prototipo` ya se maneja el kart de Blip por la Cocina, una sala cerrada hecha con formas simples. Cómo probarlo y qué falta: [`HISTORIAL.md`](HISTORIAL.md), secciones 6 y 9.
+
+La escena `SalaDePrueba` es la del proyecto base: un rincón de la cocina para ver la luz y los materiales, sin manejo.
 
 ## Bajarlo a tu PC (por ejemplo, al disco A:)
 
@@ -38,15 +40,18 @@ git pull
 2. Elegí la carpeta `A:\Apps\bichikart\BichiKart`.
 3. El proyecto usa **Unity 6000.3.14f1** (Unity 6.3 LTS). Si tenés otra versión de Unity 6, elegila en la columna "Editor Version" y aceptá actualizar el proyecto.
 4. La primera vez tarda varios minutos, porque Unity descarga los paquetes y arma la carpeta `Library`.
-5. En la ventana **Project**, abrí `Assets/Scenes/SalaDePrueba` con doble clic.
-6. Apretá **Play**: la rebanada de pan flota y gira, y la antena de Blip se mueve.
+5. En la ventana **Project**, abrí `Assets/Scenes/Prototipo` con doble clic.
+6. Apretá **Play**, hacé clic en el juego y manejá con W/S/A/D. El mouse mueve la cámara y Escape lo suelta.
 
 ## Estructura
 
 | Carpeta | Qué hay |
 |---|---|
-| `BichiKart/Assets/Scenes` | La escena `SalaDePrueba` |
-| `BichiKart/Assets/BichiKart/Scripts/Prueba` | El código que arma la sala de prueba con formas simples |
+| `BichiKart/Assets/Scenes` | Las escenas `Prototipo` y `SalaDePrueba` |
+| `BichiKart/Assets/BichiKart/Scripts` | El código del juego: el kart, la sala, la cámara y las formas simples |
+| `BichiKart/Assets/BichiKart/Editor` | Herramientas del editor: armar la escena Prototipo y correr las pruebas |
+| `BichiKart/Assets/BichiKart/Pruebas` | Las pruebas automáticas |
+| `BichiKart/Assets/BichiKart/Ajustes` | Los números del manejo y las medidas de la sala |
 | `BichiKart/Assets/Settings` | La configuración de URP (PC y celular) y los efectos de imagen |
 | `BichiKart/Packages` | Los paquetes de Unity que usa el proyecto |
 | `BichiKart/ProjectSettings` | La configuración del proyecto (nombre, identificador, etc.) |
