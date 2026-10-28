@@ -509,7 +509,8 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 
 ### Lecciones del hito 7 (primera vuelta)
 
-- Se probó en Play con un piloto automático: sin el pan, la gravedad salió 3 veces en 6,2 s (cada 2,50 s); con el pan, cada 5 s; la marca de caída se vio en cada vuelo y el aro de la interfaz coincidió con la carga (0,49).
+- Se probó en Play con un piloto automático: sin el pan, la gravedad salió 3 veces en 6,2 s (cada 2,50 s); con el pan (robándoselo a Zorbo), cada 5,00 s. La marca de caída se vio en cada vuelo y el aro de la interfaz coincidió con la carga (0,49).
+- Ojo al probar así: si la partida ya está corriendo, una compu puede tener el pan y "agarrarlo" no hace nada (hay que robarlo); y si el piloto pide gravedad en el mismo paso en que se lo reubica (con la carga llena), el kart sale volando.
 - Sobre la boca **sin F** el kart no se mete; con F entra enseguida y sale por el techo. El cartel se ve chiquito (0,6) a 6 de la boca y grande (1) encima.
 - La compu con el pan escapó por el caño apretando F (tardó 2,6 s porque arrancó mirando para el otro lado). Duda entre "escapar por el caño" y "esconderse" cuando el perseguidor queda justo a 9: es algo para mirar si se nota jugando.
 - Cámara: girada 400° quedó en 40° (da la vuelta entera); quieta no volvió; manejando volvió al centro entre 1,5 y 2,5 s.
