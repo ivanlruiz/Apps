@@ -112,7 +112,7 @@ Se escribió `DISENO.md` con todas las decisiones y se subió al repo. Se fue ac
   - Usar paquetes de modelos.
   - Generarlos con IA a partir de las imágenes de Gemini (por ejemplo **Meshy** o **Tripo**).
 - Claude integra los modelos y se encarga de materiales, luz y código.
-- El prototipo se va a ver simple. El salto visual llega en la etapa 3.
+- El prototipo se va a ver simple. El salto visual llega en la etapa de arte (etapa 4).
 
 ### 3.10 Proyecto base de Unity
 
@@ -135,6 +135,16 @@ El usuario eligió hacer primero un **proyecto base** para comprobar que abre bi
 - El usuario bajó el repo a **`A:\Apps`** con `git clone --branch ccr-5e101442-8k3tts https://github.com/ivanlruiz/Apps.git`.
 - Instaló **Claude Code** en Windows (`irm https://claude.ai/install.ps1 | iex`, versión 2.1.312, en `C:\Users\ivanc\.local\bin\claude.exe`). Tuvo que agregar esa carpeta al PATH.
 - Probó `claude --teleport` y funcionó, pero no le sirvió trabajar en la terminal. Decidió **empezar una conversación nueva localmente** pasándole este archivo.
+
+### 3.12 Primera conversación local
+
+- **Proyecto base probado** en Unity 6000.0.62f1: abre, compila sin errores y la sala de prueba se ve bien en Play.
+  - Solo aparece un aviso informativo de URP: las sombras de las 3 luces puntuales no entran enteras en la imagen de sombras de 2048×2048 y URP les baja la calidad. Se deja para cuando se arme la luz del prototipo.
+  - Al abrirlo, Unity actualizó la configuración de URP y de Shader Graph, y creó `packages-lock.json` y `.vsconfig`. Se subieron a GitHub.
+- **Conversación con Gemini:** se llama "Ideas de nombres para videojuego" ("Argon" es el nombre del modelo de Gemini, no de la charla). Se leyó entera:
+  - Su **revisión técnica** (kart, cámara, tuberías, compu y online) pasó a la sección **Notas técnicas** de `DISENO.md`.
+  - En la parte de arte, Gemini habla de imágenes del Baño, el Cuarto de juguetes y la Nave que en realidad no generó. Siguen pendientes.
+- **Decisión sobre el online:** Gemini recomendó armar el prototipo con red desde el principio. Se decidió hacerlo **sin red, pero preparado**: las órdenes de cada kart vienen de una fuente intercambiable (teclado, compu o red) y las reglas viven en un solo lugar. Después del prototipo hay una **prueba de online** antes del arte, así que las etapas pasaron a ser 5.
 
 ## 4. Todas las decisiones
 
@@ -329,7 +339,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 | Este historial | `bichikart/HISTORIAL.md` |
 | Instrucciones del proyecto | `bichikart/README.md` |
 | Imágenes | `bichikart/imagenes/`: `boceto-3d.png`, `menu-principal.png`, `bichitos.png`, `mapa-cocina.png` (concepto aprobado), `referencia-graficos.png` (acabado buscado) |
-| Proyecto de Unity | `bichikart/BichiKart/` (proyecto base, sin probar en Unity todavía) |
+| Proyecto de Unity | `bichikart/BichiKart/` (proyecto base, probado en Unity: abre y se ve bien) |
 | Prototipo 2D viejo | Rama `bichikarts-2d-referencia`, carpeta `bichikarts/` |
 
 ## 6. Etapas y próximos pasos
@@ -346,14 +356,14 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
    - Barra de tiempo, aro, flecha al dueño y minimapa.
    - 3 rivales de la compu.
    - Una tubería con viaje por adentro.
-   - Sin online, poderes ni arte final.
-3. Bichitos, mapas y arte (modelos 3D).
-4. Online y partidas personalizadas.
+   - Sin online, poderes ni arte final, pero con el código preparado para la red (ver **Notas técnicas** en `DISENO.md`).
+3. **Prueba de online**: dos PCs en la misma sala, con la comida y el robo, antes de invertir en arte.
+4. Bichitos, mapas y arte (modelos 3D).
+5. Online completo y partidas personalizadas.
 
-**Lo primero ahora:** comprobar que el proyecto base abre bien en Unity:
-1. En Unity Hub: **Add → Add project from disk** → `A:\Apps\bichikart\BichiKart`.
-2. Abrir `Assets/Scenes/SalaDePrueba` y apretar **Play**.
-3. Si aparece algún error en la consola, corregirlo.
+~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
+
+**Lo próximo:** proponer el plan detallado de la etapa 2 y esperar el sí.
 
 ## 7. Pendientes del diseño
 
@@ -366,7 +376,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 - Mapas, bichitos y comidas de cada temporada.
 - Lista completa de accesorios, calcos y estelas, y cuáles están disponibles al empezar.
 - Precios: monedas por partida, tienda y paquetes.
-- Servicio de servidores para el online (Unity Gaming Services o Photon) y su costo.
+- Librería de red para el online (Netcode for GameObjects o FishNet), servicio de servidores y su costo.
 
 ## 8. Lecciones de esta conversación
 

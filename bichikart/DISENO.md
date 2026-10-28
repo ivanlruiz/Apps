@@ -328,12 +328,32 @@ Todos se arman con esferas, cápsulas y formas orgánicas simples.
 - **Robo:** "plop" para el ladrón y grito ofendido del robado.
 - **Tuberías:** succión al entrar, "plop" al salir.
 
+## Notas técnicas
+
+Cómo se resuelve cada parte difícil en Unity. Sale de la revisión técnica de Gemini y se ajusta en el prototipo.
+
+| Parte | Cómo se hace |
+|---|---|
+| **Kart** | No se usan las ruedas de física de Unity (WheelColliders), porque siempre tiran hacia abajo del mundo. El kart físico es una **esfera invisible** con Rigidbody y sin la gravedad de Unity: el juego le aplica su propia gravedad hacia la superficie que tiene abajo, que detecta con un rayo. El kart que se ve va aparte, copia la posición de la esfera y se inclina en el derrape |
+| **Cámara** | **Cinemachine 3**, atada al "arriba" del kart para que gire con vos en paredes y techo. Para el anti-mareo, además de suavizar el giro, se prueba dejar el horizonte fijo |
+| **Tuberías** | Paquete **Unity Splines**. Al entrar, el kart sigue la curva del caño a velocidad pareja y puede girar alrededor de las paredes del tubo para esquivar o chocar al de adelante |
+| **Compu** | El NavMesh de Unity no sirve para paredes y techo. Se usa una **red de puntos de paso** en piso, paredes y techo, y rayos cortos alrededor de cada kart para esquivar, buscar cajitas o perseguir al dueño de la comida |
+
+### Preparado para el online
+
+El prototipo es sin red, pero se arma para que sumarla después no obligue a reescribir todo:
+
+- Cada kart recibe sus **órdenes** (acelerar, frenar, doblar, saltar, derrapar, gravedad y bocina) de una **fuente intercambiable**: tu teclado, la compu o, más adelante, la red.
+- Las **reglas** (agarrar, aguantar, robar, protección y tiempo) viven en un solo lugar: el **árbitro de la partida**.
+- Para el online se elige entre **Netcode for GameObjects** y **FishNet**, con **Unity Relay** y **Lobby** para las salas. Como los karts usan física, jugar por internet necesita predecir y corregir el movimiento en cada PC, y eso se prueba temprano.
+
 ## Etapas de trabajo
 
 1. **Documento de diseño** (este archivo).
-2. **Prototipo jugable contra la compu**, con formas simples: un mapa, manejo por paredes y techo, gravedad, tuberías y robo de comida. Sirve para comprobar que sea divertido.
-3. **Bichitos, mapas y arte.**
-4. **Online y partidas personalizadas.**
+2. **Prototipo jugable contra la compu**, con formas simples: un mapa, manejo por paredes y techo, gravedad, tuberías y robo de comida. Sin online, pero preparado para sumarlo (ver **Notas técnicas**). Sirve para comprobar que sea divertido.
+3. **Prueba de online**: dos PCs en la misma sala, con la comida y el robo, para confirmar que funciona por internet antes de invertir en arte.
+4. **Bichitos, mapas y arte.**
+5. **Online completo y partidas personalizadas.**
 
 Antes de cada etapa se revisa y se aprueba qué se va a hacer.
 
@@ -347,7 +367,7 @@ Antes de cada etapa se revisa y se aprueba qué se va a hacer.
 - **Temporadas:** mapas, bichitos y comidas de cada una.
 - **Accesorios, calcos y estelas:** lista completa y cuáles están disponibles al empezar.
 - **Precios:** monedas por partida, precios en la tienda y de los paquetes.
-- **Online:** servicio de servidores (por ejemplo Unity Gaming Services o Photon) y su costo.
+- **Online:** librería de red (Netcode for GameObjects o FishNet), servicio de servidores y su costo.
 
 ## Referencias
 
