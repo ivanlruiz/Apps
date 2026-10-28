@@ -62,6 +62,9 @@ Se puede cambiar al crear la partida. La idea original contemplaba 25 segundos p
 
 ### Tuberías
 
+- Son **caños reales de la casa**, metálicos y grises: sifones y desagües, conductos de ventilación y mangueras. Nada de caños de colores tipo Mario.
+- Las bocas son **rejillas o desagües redondos** en el piso, las paredes y el techo.
+- Al lado de cada boca hay una **lucecita de color**. Las dos bocas de un mismo caño tienen el mismo color (azul, verde, rosa o amarillo), para saber por dónde vas a salir.
 - Te metés por una boca y **viajás por adentro como en un tobogán**, con la cámara siguiéndote, hasta salir por otra boca.
 - **Te pueden seguir y robar adentro** del caño.
 - Sonido: succión al entrar y "plop" al salir.
@@ -125,10 +128,14 @@ Cada mapa es una **sala cerrada** (piso, paredes y techo), no un circuito abiert
 
 | Mapa | Zonas | Comida | Ambientación |
 |---|---|---|---|
-| **Cocina** | Mesada y pileta, heladera abierta (piso helado), alacena, mesa con mantel | Miguita de pan | Mesada de granito, heladera gigante, mantel a cuadros, frascos y tostadora; ventana enorme al espacio |
+| **Cocina** | Mesada y pileta, heladera abierta (piso helado), alacena, mesa con mantel | Rebanada de pan | Rincón cerrado de la cocina: el piso es la mesada de granito, el techo es la parte de abajo de la alacena y un costado es una heladera gigante abierta. Pared de azulejos con la pileta, ventana enorme al espacio y migas gigantes por el piso |
 | **Baño** | Bañadera, lavatorio, inodoro (remolino al tirar la cadena), botiquín | Caramelo | Baldosas, chorros de agua, cepillo de dientes enorme; el caramelo sobre una esponja gigante |
 | **Cuarto de juguetes** | Pista de autitos, castillo de bloques | Galletita | Bloques, dados y autitos de juguete; la galletita sobre una alfombra de juego |
 | **Nave espacial** | Zonas sin gravedad, botón que da vuelta la gravedad de toda la sala, ventanal gigante | Comida espacial en tubo | Consolas gigantes, cables y compuertas; el tubo de comida sobre un soporte metálico |
+
+![Concepto del mapa Cocina: rincón de cocina con la mesada como piso, la heladera gigante al costado y la rebanada de pan en el medio](imagenes/mapa-cocina.png)
+
+*Concepto del mapa Cocina hecho con Gemini (versión aprobada). En el nivel real, el centro de la mesada queda despejado para manejar.*
 
 Elementos vivos en los mapas:
 
@@ -332,7 +339,7 @@ Antes de cada etapa se revisa y se aprueba qué se va a hacer.
 
 ## Pendientes
 
-- **Imágenes de concepto** de los 4 mapas y del kart para personalizar (hechas con Gemini, falta sumarlas).
+- **Imágenes de concepto** del Baño, el Cuarto de juguetes, la Nave y el kart para personalizar (con Gemini).
 - **Controles:** botones del joystick y detalle de los controles de celular.
 - **Desafíos:** lista concreta y sus premios.
 - **Tutorial:** contenido paso a paso.
