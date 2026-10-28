@@ -440,6 +440,23 @@ Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian 
 
 La cámara va a 6,5 detrás del kart, gira con él en las paredes y el techo, y vuelve sola atrás un segundo después de soltar el mouse. En el objeto **Cámara del kart** se puede tildar **Anti Mareo** para que acompañe más despacio los giros.
 
+### Qué probar para el ajuste final (hito 7)
+
+Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Assets/BichiKart/Ajustes` (se eligen en Unity y se cambian en el Inspector, también mientras se juega), salvo la cámara, que está en el objeto **Cámara del kart**.
+
+| Qué probar | Si no convence, tocar |
+|---|---|
+| ¿La velocidad (16) es buena para esta sala, o muy rápida o lenta? | `AjustesDelKart` → Velocidad Maxima, Aceleracion |
+| ¿Doblar y derrapar se siente bien? ¿El mini turbo se nota? | `AjustesDelKart` → Giro, Giro Derrape, Carga Mini Turbo, Velocidad Turbo |
+| ¿Subir por las paredes y andar por el techo marea? | Cámara del kart → Anti Mareo |
+| ¿Sirve el botón de gravedad? ¿Se puede abusar? | `AjustesDelKart` → Impulso Gravedad, Espera Gravedad |
+| ¿20 s con el pan contra 3 compus es posible? | `ReglasDePartida` → Tiempo Cuatro Jugadores, Velocidad Duenio, Velocidad Perseguidores |
+| ¿Se nota cuando te roban? ¿El segundito de protección alcanza? | `ReglasDePartida` → Empuje Robado, Salto Robado, Proteccion Tras Robo |
+| ¿Se entiende el caño (por dónde entrar y salir)? ¿Dura bien el viaje? | Objeto **Tubería azul** → Velocidad, Radio Boca |
+| ¿La compu es muy buena o muy mala? | `AjustesDeCompu` → Reaccion, Anticipacion, Usa Gravedad, Usa Canio |
+| ¿Se leen la barra, la flecha, el aro y el minimapa? | Contarle a Claude qué no se entiende |
+| ¿La sala es chica o grande para 4? | `AjustesDeSala` → Medidas |
+
 ### Qué hay en la escena
 
 - **La Cocina:** sala cerrada con rincones redondeados. El piso es la mesada de granito, el techo la alacena de madera, un costado la heladera y el resto azulejos, con la ventana al espacio. Tiene una pileta plana, un **terrón de azúcar** y un **frasco de mermelada** para esconderse, migas de adorno y 4 luces cálidas y frías (solo una con sombra).
