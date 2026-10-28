@@ -358,7 +358,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
    - **Hito 1 (hecho). La sala y el kart en el piso:** la Cocina como caja cerrada con los rincones redondeados por dentro, 2 o 3 obstáculos, el kart (una esfera física invisible con el kart de Blip encima), W/S/A/D y la cámara detrás, que gira con el mouse y vuelve sola. Ver la sección 9.
    - **Hito 2 (hecho). Paredes, techo y gravedad:** ruedas magnéticas, cámara que gira con vos (con anti-mareo) y Ctrl.
    - **Hito 3 (hecho). Salto, derrape y bocina.**
-   - **Hito 4. El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica. **Parte 1 hecha:** el árbitro con todas las reglas, el pan, los 3 rivales de práctica y una interfaz de texto. **Falta la parte 2:** barra, aro, flecha y minimapa.
+   - **Hito 4 (hecho). El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
    - **Hito 5. La compu de verdad:** los rivales usan paredes, techo y gravedad.
    - **Hito 6. La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo.
    - **Hito 7. Ajuste final.**
@@ -373,7 +373,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** parte 2 del hito 4 de la etapa 2: barra, aro, flecha y minimapa (los hitos 0 a 3 y la parte 1 del 4 están hechos).
+**Ahora:** hito 5 de la etapa 2, la compu de verdad (los hitos 0 a 4 están hechos).
 
 ## 7. Pendientes del diseño
 
@@ -415,7 +415,14 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 Para pasar a las paredes y al techo, alcanza con manejar hacia un rincón: las ruedas son magnéticas.
 
-La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de práctica (Pulpi, Zorbo y Mukko). Arriba se ve quién tiene el pan y cuánto le falta, en el medio los avisos y a la izquierda el marcador de rondas.
+La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de práctica (Pulpi, Zorbo y Mukko). En pantalla:
+
+- **Arriba**, la barra inflada con la carita del dueño avanzando hacia la meta, y debajo cuánto le falta.
+- **En el medio**, la cuenta regresiva y los avisos ("¡Pulpi se lo robó a Blip!").
+- **Alrededor del pan**, el aro de tiempo, que se va prendiendo con el color del dueño.
+- **Una flecha** que apunta al dueño (o al pan, si está suelto): flota arriba de él si se ve, o queda en el borde de la pantalla si no.
+- **Abajo a la derecha**, el minimapa holográfico visto desde arriba: cada kart es un círculo de su color, lleno en el piso, anillo en el techo y las dos cosas (más chico) en una pared. Blip tiene una flechita de rumbo y el pan titila.
+- **Arriba a la izquierda**, el marcador de rondas.
 
 Si algo de la escena se rompe, el menú **BichiKart → Armar escena Prototipo** la vuelve a armar de cero.
 
