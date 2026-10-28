@@ -2,7 +2,7 @@
 
 Juego de karts en 3D donde bichitos diminutos se pelean por una comida gigante dentro de una casa que flota en el espacio.
 
-Este documento junta lo que se decidió hasta ahora. Todavía no hay nada programado del juego 3D. Lo que falta definir está al final, en **Pendientes**.
+Este documento junta lo que se decidió hasta ahora. El prototipo jugable (etapa 2) está en construcción: el avance y cómo probarlo están en [`HISTORIAL.md`](HISTORIAL.md). Lo que falta definir está al final, en **Pendientes**.
 
 ![Boceto 3D: cámara detrás del kart con la miguita y el aro de tiempo](imagenes/boceto-3d.png)
 
