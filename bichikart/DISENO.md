@@ -53,18 +53,22 @@ Se puede cambiar al crear la partida. La idea original contemplaba 25 segundos p
 
 - Las ruedas son magnéticas: **subís manejando** por las paredes hasta el techo.
 - El **botón de gravedad** te tira de golpe a la superficie **opuesta** (piso ↔ techo, pared ↔ pared de enfrente).
+  - Tiene una **espera para recargarse**: 2,5 s para los perseguidores y **5 s para el que lleva la comida**, para que no se escape siempre así. Adentro de un caño no se recarga.
+  - Mientras volás aparece una **marca del color de tu bichito donde vas a caer**, y en pantalla un aro muestra cuándo está lista.
 - La **cámara gira con vos** cuando vas por paredes o techo. Hay una opción anti-mareo.
 
 ### Manejo
 
 - Arcade con algo de peso: fácil de controlar, pero con inercia y técnica.
 - Hay **salto**, **derrape** (con mini turbo al soltar), **freno y marcha atrás**, y **bocina**.
+- El que lleva la comida también derrapa, pero su mini turbo empuja **solo un 30 %**.
 
 ### Tuberías
 
 - Son **caños reales de la casa**, metálicos y grises: sifones y desagües, conductos de ventilación y mangueras. Nada de caños de colores tipo Mario.
 - Las bocas son **rejillas o desagües redondos** en el piso, las paredes y el techo.
 - Al lado de cada boca hay una **lucecita de color**. Las dos bocas de un mismo caño tienen el mismo color (azul, verde, rosa o amarillo), para saber por dónde vas a salir.
+- Para meterte, parate sobre la boca y apretá **F (usar)**. Cuando te acercás, arriba de la boca aparece un **cartel-globito** con la F y el borde del color de la lucecita.
 - Te metés por una boca y **viajás por adentro como en un tobogán**, con la cámara siguiéndote, hasta salir por otra boca.
 - **Te pueden seguir y robar adentro** del caño.
 - Sonido: succión al entrar y "plop" al salir.
@@ -208,7 +212,8 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 
 ### Cámara
 
-- Detrás del kart. Con el mouse se gira para mirar alrededor y **vuelve sola** atrás del kart al soltarlo.
+- Detrás del kart. Con el mouse se gira **una vuelta entera (360°)** para mirar alrededor.
+- **Vuelve sola** atrás del kart si dejás el mouse quieto 1,5 s **mientras manejás**; si estás quieto, queda donde la dejaste. El **clic de la ruedita** la centra enseguida.
 
 ### PC (teclado y mouse)
 
@@ -221,10 +226,12 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 | Shift | Derrapar |
 | Ctrl | Cambiar la gravedad |
 | E | Usar el poder |
+| F | Usar (meterse en un caño) |
 | Q | Bocina |
 | R | Pasar la comida (equipos) |
 | T (mantener) | Rueda de emotes y stickers |
 | Mouse | Girar la cámara |
+| Clic de la ruedita | Centrar la cámara |
 
 ### Joystick en PC
 

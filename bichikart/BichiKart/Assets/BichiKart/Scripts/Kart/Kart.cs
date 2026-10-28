@@ -29,7 +29,7 @@ namespace BichiKart
         private Vector3 _arriba = Vector3.up;
         private Vector3 _gravedad = Vector3.down;
         private Quaternion _rotacionChasis = Quaternion.identity;
-        private float _proximaGravedad;
+        private float _cargaGravedad = 1f;
         private float _despegue;
         private float _cargaDerrape;
         private float _turbo;
@@ -80,6 +80,20 @@ namespace BichiKart
         /// <summary>Cuánto más rápido o más lento va: lo pone la partida según quién tiene la comida.</summary>
         public float MultiplicadorVelocidad { get; set; } = 1f;
 
+        /// <summary>Lleva la comida: lo pone la partida. La gravedad se recarga más lento y el mini turbo empuja menos.</summary>
+        public bool LlevaComida { get; set; }
+
+        /// <summary>De 0 a 1: cuánto se recargó el botón de gravedad. Adentro de un caño no se recarga.</summary>
+        public float CargaGravedad => _cargaGravedad;
+
+        public bool GravedadLista => _cargaGravedad >= 1f;
+
+        /// <summary>Vuela hacia la superficie de enfrente después de usar la gravedad, hasta apoyarse.</summary>
+        public bool CayendoPorGravedad { get; private set; }
+
+        /// <summary>Hacia dónde tira la gravedad del kart.</summary>
+        public Vector3 Abajo => _gravedad;
+
         /// <summary>Viaja por adentro de un caño: lo mueve la tubería, no la física.</summary>
         public bool EnCanio { get; private set; }
 
@@ -90,6 +104,7 @@ namespace BichiKart
             _rb.isKinematic = true;
             _rb.detectCollisions = false;
             EnSuelo = false;
+            CayendoPorGravedad = false;
             Derrapando = false;
             DireccionDerrape = 0;
             _cargaDerrape = 0f;
@@ -189,9 +204,11 @@ namespace BichiKart
             _adelante = Vector3.ProjectOnPlane(mirando, _arriba).normalized;
             _rotacionChasis = Quaternion.LookRotation(_adelante, _arriba);
             _despegue = _turbo = _cargaDerrape = _aturdido = 0f;
+            _cargaGravedad = 1f;
             Derrapando = false;
             DireccionDerrape = 0;
             EnCanio = false;
+            CayendoPorGravedad = false;
 
             var centro = sobreElPiso + _arriba * ajustes.radioEsfera;
             transform.position = centro;
@@ -216,6 +233,10 @@ namespace BichiKart
 
             // El radio se puede cambiar mientras se juega.
             if (_esfera.radius != ajustes.radioEsfera) _esfera.radius = ajustes.radioEsfera;
+
+            // La gravedad se recarga según quién lleva la comida en cada momento (adentro del caño, no).
+            float espera = LlevaComida ? ajustes.esperaGravedadConComida : ajustes.esperaGravedad;
+            _cargaGravedad = espera > 0f ? Mathf.Min(1f, _cargaGravedad + dt / espera) : 1f;
 
             DetectarSuelo(dt);
             if (ordenes.Gravedad) CambiarGravedad();
@@ -248,6 +269,7 @@ namespace BichiKart
                 toca = false;
             }
             EnSuelo = toca;
+            if (toca) CayendoPorGravedad = false;
             float suavizado = 1f - Mathf.Exp(-ajustes.alineacion * dt);
 
             // Ruedas magnéticas: apoyado, la gravedad tira hacia la superficie que tiene abajo. Así, al pasar
@@ -265,19 +287,46 @@ namespace BichiKart
 
         /// <summary>
         /// Botón de gravedad: tira el kart hacia la superficie de enfrente (piso ↔ techo, pared ↔ pared).
-        /// Solo funciona apoyado, y con una espera corta entre usos.
+        /// Solo funciona apoyado y con el botón recargado (ver <see cref="CargaGravedad"/>).
         /// </summary>
         private void CambiarGravedad()
         {
-            if (!EnSuelo || Time.fixedTime < _proximaGravedad) return;
+            if (!EnSuelo || !GravedadLista) return;
             if (!Physics.Raycast(_rb.position, _arriba, out _, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore)) return;
 
-            _proximaGravedad = Time.fixedTime + ajustes.esperaGravedad;
+            _cargaGravedad = 0f;
             _gravedad = _arriba;
 
             // Despega de golpe: se saca la velocidad hacia la superficie de abajo y se empuja hacia la de enfrente.
             Despegar(ajustes.impulsoGravedad);
+            CayendoPorGravedad = true;
             AlCambiarGravedad?.Invoke();
+        }
+
+        /// <summary>
+        /// Dónde va a caer el kart si sigue volando como ahora: cuánto le falta para llegar a la superficie
+        /// (con la velocidad hacia ella y la gravedad) y cuánto se corre de costado mientras tanto.
+        /// </summary>
+        public bool BuscarDondeCae(out Vector3 punto, out Vector3 normal)
+        {
+            punto = normal = Vector3.zero;
+            if (_rb == null || EnCanio) return false;
+            var posicion = _rb.position;
+            if (!Physics.Raycast(posicion, _gravedad, out var golpe, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore)) return false;
+
+            var v = _rb.linearVelocity;
+            float hacia = Vector3.Dot(v, _gravedad);
+            float distancia = Mathf.Max(0f, golpe.distance - ajustes.radioEsfera);
+            float g = Mathf.Max(ajustes.gravedad, 0.01f);
+            float tiempo = (-hacia + Mathf.Sqrt(Mathf.Max(0f, hacia * hacia + 2f * g * distancia))) / g;
+            var deCostado = v - _gravedad * hacia;
+
+            var arriba = posicion + deCostado * tiempo - _gravedad * 0.5f;
+            if (Physics.Raycast(arriba, _gravedad, out var caida, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore))
+                golpe = caida;
+            punto = golpe.point;
+            normal = golpe.normal;
+            return true;
         }
 
         private void Saltar()
@@ -388,7 +437,9 @@ namespace BichiKart
             float maxima = ajustes.velocidadMaxima * MultiplicadorVelocidad;
             if (EnTurbo && avance > -0.01f)
             {
-                objetivo = maxima * ajustes.velocidadTurbo;
+                // El que lleva la comida recibe solo una parte del empujón.
+                float parte = LlevaComida ? ajustes.turboConComida : 1f;
+                objetivo = maxima * (1f + (ajustes.velocidadTurbo - 1f) * parte);
                 tasa = ajustes.aceleracionTurbo;
             }
             else if (avance > 0.01f)

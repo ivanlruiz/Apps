@@ -215,6 +215,7 @@ namespace BichiKart
                 var kart = participantes[i].Kart;
                 kart.Quieto = quietos;
                 kart.MultiplicadorVelocidad = Arbitro.MultiplicadorVelocidad(i);
+                kart.LlevaComida = Arbitro.Duenio == i;
             }
         }
     }

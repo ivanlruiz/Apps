@@ -8,13 +8,13 @@ namespace BichiKart
     /// <item>Si la comida está suelta, va a buscarla.</item>
     /// <item>Si la tiene otro, lo persigue (un poco adelantado a donde va a estar). Si el dueño está en la
     /// superficie de enfrente, más o menos encima, usa la gravedad; si está cerca de la otra boca del caño,
-    /// se mete por el caño.</item>
+    /// se mete por el caño (apretando usar sobre la boca).</item>
     /// <item>Si la tiene él, se esconde detrás del terrón o del frasco; si alguien se acerca, escapa, y si lo
     /// tienen encima usa la gravedad o el caño para zafar.</item>
     /// </list>
-    /// Para llegar a una pared o al techo alcanza con manejar hacia donde está el objetivo: las ruedas
-    /// magnéticas hacen el resto. Esquiva los obstáculos, derrapa en las curvas cerradas y, si se traba,
-    /// retrocede.
+    /// Como una persona, cuando el kart que mira usa la gravedad tarda un poquito en darse cuenta. Para
+    /// llegar a una pared o al techo alcanza con manejar hacia donde está el objetivo: las ruedas magnéticas
+    /// hacen el resto. Esquiva los obstáculos, derrapa en las curvas cerradas y, si se traba, retrocede.
     /// </summary>
     [RequireComponent(typeof(Kart), typeof(Participante))]
     public sealed class FuenteCompu : MonoBehaviour, IFuenteDeOrdenes
@@ -27,7 +27,9 @@ namespace BichiKart
         private Tuberia _tuberia;
         private Vector3 _objetivo;
         private bool _quiereGravedad, _llego;
-        private float _proximaDecision, _proximaGravedad;
+        private int _boca = -1;
+        private Kart _mirando;
+        private float _proximaDecision, _reaccionHasta;
         private float _trabado, _marchaAtras, _derrape;
         private float _ladoMarchaAtras = 1f;
 
@@ -45,6 +47,25 @@ namespace BichiKart
             _tuberia = FindFirstObjectByType<Tuberia>();
         }
 
+        private void Start()
+        {
+            if (_partida == null) return;
+            foreach (var otro in _partida.Participantes)
+            {
+                if (otro == _yo) continue;
+                var kart = otro.Kart;
+                kart.AlCambiarGravedad += () => VioGravedad(kart);
+            }
+        }
+
+        /// <summary>Si el que mira usa la gravedad, sigue con lo que venía haciendo un ratito antes de reaccionar.</summary>
+        private void VioGravedad(Kart kart)
+        {
+            if (ajustes == null || kart != _mirando) return;
+            _reaccionHasta = Time.time + Random.Range(ajustes.reaccionAGravedad.x, ajustes.reaccionAGravedad.y);
+            _proximaDecision = Mathf.Max(_proximaDecision, _reaccionHasta);
+        }
+
         public OrdenesDelKart LeerOrdenes()
         {
             if (ajustes == null || _partida == null || _partida.Arbitro == null || _kart.EnCanio) return default;
@@ -59,12 +80,14 @@ namespace BichiKart
             if (Destrabarse(dt, out var paraAtras)) return paraAtras;
 
             var ordenes = Manejar(dt);
-            if (_quiereGravedad && _kart.EnSuelo && Time.time >= _proximaGravedad)
+            // La gravedad, solo cuando el botón está recargado (si no, se perdería el intento).
+            if (_quiereGravedad && _kart.EnSuelo && _kart.GravedadLista && Time.time >= _reaccionHasta)
             {
                 ordenes.Gravedad = true;
                 _quiereGravedad = false;
-                _proximaGravedad = Time.time + ajustes.esperaEntreGravedades;
             }
+            // Llegó a la boca que buscaba: se mete.
+            if (_boca >= 0 && _tuberia != null && _tuberia.BocaAlAlcance(_kart) == _boca) ordenes.Usar = true;
             return ordenes;
         }
 
@@ -75,6 +98,8 @@ namespace BichiKart
             var arbitro = _partida.Arbitro;
             _quiereGravedad = false;
             _llego = false;
+            _boca = -1;
+            _mirando = null;
 
             if (arbitro.Duenio == Arbitro.Nadie)
             {
@@ -91,6 +116,7 @@ namespace BichiKart
             {
                 Intencion = "Persigue";
                 var duenio = _partida.Participantes[arbitro.Duenio].Kart;
+                _mirando = duenio;
                 _objetivo = duenio.transform.position + duenio.Adelante * (duenio.VelocidadAdelante * ajustes.anticipacion);
                 PensarGravedad(duenio.transform.position, duenio.Arriba);
                 PensarCanio(duenio.transform.position, duenio.Arriba);
@@ -110,6 +136,7 @@ namespace BichiKart
                 menor = d;
                 cercano = otro.Kart;
             }
+            _mirando = cercano;
 
             if (cercano != null && menor < ajustes.distanciaParaHuir)
             {
@@ -183,6 +210,7 @@ namespace BichiKart
                 {
                     Intencion += " (por el caño)";
                     _objetivo = boca;
+                    _boca = i;
                     return;
                 }
             }
@@ -197,6 +225,7 @@ namespace BichiKart
                 if (Vector3.Dot(_kart.Arriba, normal) < 0.8f || Vector3.Distance(_kart.transform.position, boca) > ajustes.distanciaABoca * 0.8f) continue;
                 Intencion = "Escapa por el caño";
                 _objetivo = boca;
+                _boca = i;
                 _quiereGravedad = false;
                 return;
             }

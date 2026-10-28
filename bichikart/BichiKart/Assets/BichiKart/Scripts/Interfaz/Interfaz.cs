@@ -8,7 +8,8 @@ namespace BichiKart
     /// Lo que se ve en pantalla durante la partida, con paneles "inflados":
     /// arriba, la barra con la carita del dueño avanzando hacia la meta; en el medio, la cuenta regresiva y
     /// los avisos; una flecha que apunta al dueño (o a la comida suelta); el minimapa holográfico abajo a la
-    /// derecha, visto desde arriba; y el marcador de rondas. Se arma desde código al empezar.
+    /// derecha, visto desde arriba; el botón de gravedad recargándose abajo a la izquierda; y el marcador
+    /// de rondas. Se arma desde código al empezar.
     /// </summary>
     public sealed class Interfaz : MonoBehaviour
     {
@@ -23,6 +24,7 @@ namespace BichiKart
         private static readonly Color Holograma = new Color(0.24f, 0.76f, 0.94f, 0.22f);
         private static readonly Color BordeHolograma = new Color(0.55f, 0.9f, 1f, 0.9f);
         private static readonly Color ColorDelPan = new Color(1f, 0.82f, 0.25f);
+        private static readonly Color ColorGravedad = new Color(0.56f, 0.83f, 1f);
 
         [SerializeField] private Partida partida;
         [SerializeField] private Camera camara;
@@ -41,6 +43,12 @@ namespace BichiKart
 
         private RectTransform _flecha;
         private Image _flechaColor;
+
+        private RectTransform _gravedad;
+        private Image _gravedadCarga, _gravedadFondo;
+        private CanvasGroup _gravedadIcono;
+        private bool _gravedadEstabaLista;
+        private float _gravedadLatido;
 
         private RectTransform _mapa;
         private Vector2 _medidasMapa;
@@ -68,6 +76,7 @@ namespace BichiKart
             ArmarBarra();
             ArmarFlecha();
             ArmarMinimapa();
+            ArmarGravedad();
             _aviso = Texto("Aviso", transform, 72, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.62f), new Vector2(1400f, 300f), Vector2.zero);
             _marcador = Texto("Marcador", transform, 30, TextAnchor.UpperLeft, new Vector2(0f, 1f), new Vector2(380f, 260f), new Vector2(40f, -30f));
             _marcador.rectTransform.pivot = new Vector2(0f, 1f);
@@ -87,6 +96,7 @@ namespace BichiKart
             ActualizarBarra(arbitro);
             ActualizarFlecha(arbitro);
             ActualizarMinimapa(arbitro);
+            ActualizarGravedad();
             ActualizarMarcador(arbitro);
 
             var color = arbitro.Duenio == Arbitro.Nadie ? Color.white : partida.Participantes[arbitro.Duenio].Color;
@@ -277,6 +287,52 @@ namespace BichiKart
             var sala = partida.Cocina.Medidas;
             var local = partida.Cocina.transform.InverseTransformPoint(lugar);
             return new Vector2(Mathf.Clamp(local.x / sala.x, -0.5f, 0.5f) * _medidasMapa.x, Mathf.Clamp(local.z / sala.z, -0.5f, 0.5f) * _medidasMapa.y);
+        }
+
+        // ------------------------------------------------------------------ botón de gravedad
+
+        /// <summary>Abajo a la izquierda: un aro que se llena mientras se recarga la gravedad y late cuando está lista.</summary>
+        private void ArmarGravedad()
+        {
+            _gravedad = Imagen("Gravedad", transform, Dibujos.Circulo, Panel, new Vector2(0f, 0f), new Vector2(118f, 118f), new Vector2(100f, 110f));
+            _gravedadFondo = _gravedad.GetComponent<Image>();
+            Borde(_gravedad, Color.white, 3f);
+
+            var carga = Imagen("Carga", _gravedad, Dibujos.Anillo, ColorGravedad, new Vector2(0.5f, 0.5f), new Vector2(104f, 104f), Vector2.zero);
+            _gravedadCarga = carga.GetComponent<Image>();
+            _gravedadCarga.type = Image.Type.Filled;
+            _gravedadCarga.fillMethod = Image.FillMethod.Radial360;
+            _gravedadCarga.fillOrigin = (int)Image.Origin360.Top;
+            _gravedadCarga.fillClockwise = true;
+
+            // Dos flechas, una para arriba y otra para abajo: "dar vuelta la gravedad".
+            var icono = Imagen("Ícono", _gravedad, null, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(60f, 60f), Vector2.zero);
+            _gravedadIcono = icono.gameObject.AddComponent<CanvasGroup>();
+            Imagen("Arriba", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(-11f, 9f));
+            Imagen("Abajo", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(11f, -9f)).localRotation = Quaternion.Euler(0f, 0f, 180f);
+
+            var tecla = Texto("Tecla", _gravedad, 24, TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(120f, 30f), new Vector2(0f, -20f));
+            tecla.text = "Ctrl";
+        }
+
+        private void ActualizarGravedad()
+        {
+            var kart = partida.Participantes[jugador].Kart;
+            float carga = kart.CargaGravedad;
+            bool lista = kart.GravedadLista;
+            _gravedadCarga.fillAmount = carga;
+
+            // Mientras se recarga, el aro es más apagado (amarillo si lleva el pan, que tarda más).
+            var color = kart.LlevaComida ? ColorDelPan : ColorGravedad;
+            _gravedadCarga.color = lista ? color : Color.Lerp(color, Panel, 0.45f);
+            _gravedadIcono.alpha = lista ? 1f : 0.35f;
+            _gravedadFondo.color = lista ? Color.Lerp(Panel, color, 0.25f) : Panel;
+
+            // Al quedar lista, da un saltito.
+            if (lista && !_gravedadEstabaLista) _gravedadLatido = 1f;
+            _gravedadEstabaLista = lista;
+            _gravedadLatido = Mathf.Max(0f, _gravedadLatido - Time.deltaTime * 3f);
+            _gravedad.localScale = Vector3.one * (1f + 0.25f * Mathf.Sin(_gravedadLatido * Mathf.PI));
         }
 
         // ------------------------------------------------------------------ marcador y avisos

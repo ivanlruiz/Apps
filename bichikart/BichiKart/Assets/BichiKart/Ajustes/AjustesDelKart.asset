@@ -28,7 +28,8 @@ MonoBehaviour:
   suavizadoChasis: 20
   ruedasMagneticas: 1
   impulsoGravedad: 9
-  esperaGravedad: 0.4
+  esperaGravedad: 2.5
+  esperaGravedadConComida: 5
   alcanceGravedad: 80
   impulsoSalto: 9
   velocidadMinimaDerrape: 7
@@ -39,3 +40,4 @@ MonoBehaviour:
   duracionTurbo: 0.8
   velocidadTurbo: 1.35
   aceleracionTurbo: 45
+  turboConComida: 0.3

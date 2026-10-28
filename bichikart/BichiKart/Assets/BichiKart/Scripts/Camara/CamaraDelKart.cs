@@ -5,16 +5,18 @@ using UnityEngine.InputSystem;
 namespace BichiKart
 {
     /// <summary>
-    /// Mueve con el mouse (o el stick derecho del joystick) la cámara que va detrás del kart. Al soltar,
-    /// Cinemachine la vuelve sola atrás del kart. Para usar el mouse hay que hacer clic en el juego;
-    /// Escape suelta el mouse. La cámara gira con el kart cuando sube por las paredes o va por el techo;
-    /// con el anti-mareo ese giro es más lento.
+    /// Mueve con el mouse (o el stick derecho del joystick) la cámara que va detrás del kart, una vuelta
+    /// entera si hace falta. Mientras se maneja (acelerando o doblando) y no se toca el mouse, Cinemachine
+    /// la vuelve sola atrás del kart después de la espera del eje (1,5 s); quieto, queda donde la dejaste.
+    /// El clic de la ruedita (o apretar el stick derecho) la centra enseguida. Para usar el mouse hay que
+    /// hacer clic en el juego; Escape suelta el mouse. La cámara gira con el kart cuando sube por las
+    /// paredes o va por el techo; con el anti-mareo ese giro es más lento.
     /// </summary>
     [RequireComponent(typeof(CinemachineOrbitalFollow))]
     public sealed class CamaraDelKart : MonoBehaviour
     {
         [Tooltip("Grados que gira la cámara por cada punto que se mueve el mouse.")]
-        [SerializeField] private float sensibilidadMouse = 0.12f;
+        [SerializeField] private float sensibilidadMouse = 0.25f;
 
         [Tooltip("Grados por segundo que gira la cámara con el stick a fondo.")]
         [SerializeField] private float sensibilidadJoystick = 140f;
@@ -33,6 +35,7 @@ namespace BichiKart
         private CinemachineOrbitalFollow _orbita;
         private Kart _kart;
         private float _distanciaNormal;
+        private bool _centrando;
 
         public bool AntiMareo
         {
@@ -64,12 +67,45 @@ namespace BichiKart
             if (mouse != null && Cursor.lockState == CursorLockMode.Locked) giro += mouse.delta.ReadValue() * sensibilidadMouse;
             var joystick = Gamepad.current;
             if (joystick != null) giro += joystick.rightStick.ReadValue() * (sensibilidadJoystick * Time.deltaTime);
-            if (giro == Vector2.zero) return;
 
-            // Cinemachine nota el cambio de valor y espera a que se suelte para volver la cámara atrás.
-            _orbita.HorizontalAxis.Value = _orbita.HorizontalAxis.ClampValue(_orbita.HorizontalAxis.Value + giro.x);
-            float vertical = invertirVertical ? giro.y : -giro.y;
-            _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + vertical);
+            if (giro != Vector2.zero)
+            {
+                // Cinemachine nota el cambio de valor y espera a que se suelte para volver la cámara atrás.
+                _centrando = false;
+                _orbita.HorizontalAxis.Value = _orbita.HorizontalAxis.ClampValue(_orbita.HorizontalAxis.Value + giro.x);
+                float vertical = invertirVertical ? giro.y : -giro.y;
+                _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + vertical);
+            }
+            Recentrar(mouse, joystick);
+        }
+
+        /// <summary>
+        /// La cámara vuelve atrás del kart solo mientras se maneja: quieto, la espera vuelve a empezar y la
+        /// cámara queda donde la dejaste. La ruedita del mouse o el stick derecho apretado la centran ya.
+        /// </summary>
+        private void Recentrar(Mouse mouse, Gamepad joystick)
+        {
+            bool centrarYa = (mouse != null && mouse.middleButton.wasPressedThisFrame)
+                || (joystick != null && joystick.rightStickButton.wasPressedThisFrame);
+            if (centrarYa)
+            {
+                _centrando = true;
+                _orbita.HorizontalAxis.TriggerRecentering();
+                _orbita.VerticalAxis.TriggerRecentering();
+            }
+            if (_centrando)
+            {
+                // Termina cuando llegó (o cuando se movió el mouse, más arriba).
+                _centrando = Mathf.Abs(Mathf.DeltaAngle(_orbita.HorizontalAxis.Value, _orbita.HorizontalAxis.Center)) > 0.5f
+                    || Mathf.Abs(_orbita.VerticalAxis.Value - _orbita.VerticalAxis.Center) > 0.5f;
+                return;
+            }
+
+            var ordenes = _kart != null ? _kart.UltimasOrdenes : default;
+            bool manejando = Mathf.Abs(ordenes.Avance) > 0.1f || Mathf.Abs(ordenes.Giro) > 0.1f || (_kart != null && _kart.EnCanio);
+            if (manejando) return;
+            _orbita.HorizontalAxis.CancelRecentering();
+            _orbita.VerticalAxis.CancelRecentering();
         }
 
         private void AplicarAntiMareo()

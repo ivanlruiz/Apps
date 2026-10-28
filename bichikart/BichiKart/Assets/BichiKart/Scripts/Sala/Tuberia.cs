@@ -8,8 +8,9 @@ namespace BichiKart
     /// <summary>
     /// Un caño real de la casa, metálico y gris, que une un desagüe del piso con una rejilla del techo en la
     /// esquina de enfrente. Va por afuera de la sala: baja por debajo del piso, sube por detrás de la
-    /// heladera y cruza por arriba del techo. Las dos bocas tienen la misma lucecita de color. Al pasar por
-    /// una boca, el kart se mete y viaja solo por adentro, como en un tobogán, hasta salir por la otra; con
+    /// heladera y cruza por arriba del techo. Las dos bocas tienen la misma lucecita de color. Arriba de cada
+    /// boca aparece un cartel-globito con la F cuando el jugador se acerca. Sobre la boca, con el botón de
+    /// usar (F) el kart se mete y viaja solo por adentro, como en un tobogán, hasta salir por la otra; con
     /// doblar puede girar alrededor del caño. Adentro también se puede robar: si otro kart te alcanza, te toca.
     /// Se arma desde código con las medidas de la Cocina y no se guarda en la escena.
     /// </summary>
@@ -30,8 +31,11 @@ namespace BichiKart
         [Tooltip("Radio del caño por dentro.")]
         [SerializeField] private float radioCanio = 1.8f;
 
-        [Tooltip("Qué tan cerca de una boca hay que pasar para meterse.")]
-        [SerializeField] private float radioBoca = 1.7f;
+        [Tooltip("Qué tan cerca de una boca hay que estar para meterse con el botón de usar.")]
+        [SerializeField] private float radioBoca = 2.6f;
+
+        [Tooltip("Desde qué distancia se ve el cartel arriba de la boca (más chico hasta que se puede usar).")]
+        [SerializeField] private float distanciaCartel = 8f;
 
         [Tooltip("Grados por segundo que se gira alrededor del caño doblando a fondo.")]
         [SerializeField] private float giroAdentro = 200f;
@@ -47,6 +51,12 @@ namespace BichiKart
         private Kart[] _karts = new Kart[0];
         private readonly List<Viaje> _viajes = new List<Viaje>();
         private readonly Dictionary<Kart, float> _puedeVolverDesde = new Dictionary<Kart, float>();
+        private readonly Transform[] _carteles = new Transform[2];
+        private readonly float[] _tamanoCartel = new float[2];
+        private Kart _jugador;
+        private Camera _camara;
+
+        private const float AlturaCartel = 2.8f;
 
         private sealed class Viaje
         {
@@ -63,6 +73,21 @@ namespace BichiKart
             return numero == 0
                 ? (transform.TransformPoint(_bocaPiso), transform.TransformDirection(_normalPiso))
                 : (transform.TransformPoint(_bocaTecho), transform.TransformDirection(_normalTecho));
+        }
+
+        /// <summary>Qué tan cerca de una boca hay que estar para meterse.</summary>
+        public float RadioBoca => radioBoca;
+
+        /// <summary>Por qué boca se puede meter este kart ahora mismo apretando usar (-1 si por ninguna).</summary>
+        public int BocaAlAlcance(Kart kart) => BocaCerca(kart, radioBoca);
+
+        private int BocaCerca(Kart kart, float distancia)
+        {
+            if (kart == null || kart.EnCanio || !kart.EnSuelo) return -1;
+            if (_puedeVolverDesde.TryGetValue(kart, out float desde) && Time.time < desde) return -1;
+            if (EstaSobre(kart, _bocaPiso, _normalPiso, distancia)) return 0;
+            if (EstaSobre(kart, _bocaTecho, _normalTecho, distancia)) return 1;
+            return -1;
         }
 
         /// <summary>Lo usa la herramienta que arma la escena.</summary>
@@ -82,13 +107,44 @@ namespace BichiKart
 
         private void Start()
         {
-            if (Application.isPlaying) _karts = FindObjectsByType<Kart>(FindObjectsSortMode.None);
+            if (!Application.isPlaying) return;
+            _karts = FindObjectsByType<Kart>(FindObjectsSortMode.None);
+            var teclado = FindFirstObjectByType<FuenteTeclado>();
+            _jugador = teclado != null ? teclado.GetComponent<Kart>() : null;
         }
 
         private void Update()
         {
             // Si cambian las medidas de la sala, el caño se vuelve a armar.
             if (cocina != null && cocina.Medidas != _medidasArmadas) Construir();
+            if (Application.isPlaying) ActualizarCarteles();
+        }
+
+        /// <summary>
+        /// El cartel de cada boca aparece chiquito cuando el jugador anda cerca, en la misma superficie, y
+        /// crece y salta cuando ya se puede meter. Siempre mira a la cámara.
+        /// </summary>
+        private void ActualizarCarteles()
+        {
+            if (_camara == null) _camara = Camera.main;
+            int alAlcance = BocaAlAlcance(_jugador);
+            int cerca = BocaCerca(_jugador, distanciaCartel);
+            for (int i = 0; i < 2; i++)
+            {
+                var cartel = _carteles[i];
+                if (cartel == null) continue;
+                float buscado = alAlcance == i ? 1f : cerca == i ? 0.6f : 0f;
+                _tamanoCartel[i] = Mathf.Lerp(_tamanoCartel[i], buscado, 1f - Mathf.Exp(-12f * Time.deltaTime));
+                bool visible = _tamanoCartel[i] > 0.02f;
+                cartel.gameObject.SetActive(visible);
+                if (!visible) continue;
+
+                float salto = alAlcance == i ? Mathf.Abs(Mathf.Sin(Time.time * 6f)) * 0.35f : Mathf.Sin(Time.time * 3f) * 0.12f;
+                float latido = alAlcance == i ? 1f + 0.06f * Mathf.Sin(Time.time * 12f) : 1f;
+                cartel.localPosition = Vector3.up * (AlturaCartel + salto);
+                cartel.localScale = Vector3.one * (_tamanoCartel[i] * latido);
+                if (_camara != null) cartel.rotation = Quaternion.LookRotation(_camara.transform.forward, _camara.transform.up);
+            }
         }
 
         // ------------------------------------------------------------------ viajes
@@ -119,21 +175,22 @@ namespace BichiKart
             }
         }
 
+        /// <summary>Se mete el que está sobre una boca y aprieta usar.</summary>
         private void BuscarQuienEntra()
         {
             foreach (var kart in _karts)
             {
-                if (kart == null || kart.EnCanio || !kart.EnSuelo) continue;
-                if (_puedeVolverDesde.TryGetValue(kart, out float desde) && Time.time < desde) continue;
-                if (EstaSobre(kart, _bocaPiso, _normalPiso)) Entrar(kart, 1);
-                else if (EstaSobre(kart, _bocaTecho, _normalTecho)) Entrar(kart, -1);
+                if (kart == null || !kart.UltimasOrdenes.Usar) continue;
+                int boca = BocaAlAlcance(kart);
+                if (boca == 0) Entrar(kart, 1);
+                else if (boca == 1) Entrar(kart, -1);
             }
         }
 
-        private bool EstaSobre(Kart kart, Vector3 boca, Vector3 normal)
+        private bool EstaSobre(Kart kart, Vector3 boca, Vector3 normal, float distancia)
         {
             return Vector3.Dot(kart.Arriba, transform.TransformDirection(normal)) > 0.8f
-                && Vector3.Distance(kart.Chasis.position, transform.TransformPoint(boca)) < radioBoca;
+                && Vector3.Distance(kart.Chasis.position, transform.TransformPoint(boca)) < distancia;
         }
 
         /// <param name="sentido">1 si entra por el piso, -1 si entra por el techo.</param>
@@ -221,8 +278,8 @@ namespace BichiKart
             _largo = _camino.GetLength();
 
             ArmarCanio();
-            ArmarBoca("Desagüe", _bocaPiso, Quaternion.identity);
-            ArmarBoca("Rejilla del techo", _bocaTecho, Quaternion.Euler(180f, 0f, 0f));
+            _carteles[0] = ArmarBoca("Desagüe", _bocaPiso, Quaternion.identity);
+            _carteles[1] = ArmarBoca("Rejilla del techo", _bocaTecho, Quaternion.Euler(180f, 0f, 0f));
         }
 
         private void ArmarCanio()
@@ -289,8 +346,11 @@ namespace BichiKart
             return malla;
         }
 
-        /// <summary>Rejilla redonda de metal con su agujero, sus barritas y la lucecita de color al costado.</summary>
-        private void ArmarBoca(string nombre, Vector3 lugar, Quaternion giro)
+        /// <summary>
+        /// Rejilla redonda de metal con su agujero, sus barritas y la lucecita de color al costado. Devuelve
+        /// el cartel que flota arriba.
+        /// </summary>
+        private Transform ArmarBoca(string nombre, Vector3 lugar, Quaternion giro)
         {
             var boca = _formas.Nodo(nombre, transform);
             boca.localPosition = lugar;
@@ -303,6 +363,35 @@ namespace BichiKart
             var foco = _formas.Esfera("Lucecita", boca, new Vector3(2.15f, 0.15f, 0f), Vector3.one * 0.35f, _formas.Emisivo(colorLuz, 4f));
             Formas.SinSombra(foco);
             _formas.Luz("Luz de la boca", boca, new Vector3(2.15f, 0.6f, 0f), colorLuz, 6f, 5f, false);
+            return ArmarCartel(boca);
+        }
+
+        /// <summary>
+        /// Globito inflado con el borde del color de la lucecita y una tecla F en el medio, con la colita
+        /// apuntando a la boca. La cara de adelante es la -Z (la que mira a la cámara).
+        /// </summary>
+        private Transform ArmarCartel(Transform boca)
+        {
+            var cartel = _formas.Nodo("Cartel", boca);
+            cartel.localPosition = Vector3.up * AlturaCartel;
+            var borde = _formas.Emisivo(colorLuz, 1.2f);
+            var tecla = _formas.Mat(Formas.Hex("#1d2340"), 0.6f);
+            var letra = _formas.Emisivo(Color.white, 1.6f);
+
+            Formas.SinSombra(_formas.Caja("Globo", cartel, Vector3.zero, new Vector3(1.6f, 1.6f, 0.5f), 0.25f, borde));
+            var colita = _formas.Caja("Colita", cartel, new Vector3(0f, -0.85f, 0f), new Vector3(0.5f, 0.5f, 0.4f), 0.1f, borde);
+            colita.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            Formas.SinSombra(colita);
+            Formas.SinSombra(_formas.Caja("Tecla", cartel, Vector3.zero, new Vector3(1.3f, 1.3f, 0.56f), 0.2f, tecla));
+
+            // La F, con tres barritas.
+            Formas.SinSombra(_formas.Caja("F palo", cartel, new Vector3(-0.18f, 0f, -0.3f), new Vector3(0.14f, 0.76f, 0.06f), 0.025f, letra));
+            Formas.SinSombra(_formas.Caja("F arriba", cartel, new Vector3(0f, 0.31f, -0.3f), new Vector3(0.5f, 0.14f, 0.06f), 0.025f, letra));
+            Formas.SinSombra(_formas.Caja("F medio", cartel, new Vector3(-0.06f, 0.02f, -0.3f), new Vector3(0.38f, 0.14f, 0.06f), 0.025f, letra));
+
+            // En el editor se ve siempre (para acomodarlo); jugando, aparece cuando el jugador se acerca.
+            cartel.gameObject.SetActive(!Application.isPlaying);
+            return cartel;
         }
     }
 }

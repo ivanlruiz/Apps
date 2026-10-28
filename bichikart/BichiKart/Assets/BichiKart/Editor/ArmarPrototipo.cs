@@ -117,6 +117,7 @@ namespace BichiKart.Editor
             kart.Configurar(ajustes, chasis.transform, 1 << capaSala);
             var participante = raiz.AddComponent<Participante>();
             participante.Configurar(nombre, Formas.Hex(bichito));
+            raiz.AddComponent<MarcaDeCaida>();
             if (numero == 0) raiz.AddComponent<FuenteTeclado>();
             else raiz.AddComponent<FuenteCompu>().Configurar(compu);
             raiz.AddComponent<AudioSource>();
@@ -202,6 +203,10 @@ namespace BichiKart.Editor
             return camara;
         }
 
+        /// <summary>
+        /// Un eje de la cámara. Vuelve al centro 1,5 s después de soltar el mouse, pero CamaraDelKart solo
+        /// lo deja volver mientras se maneja.
+        /// </summary>
         private static InputAxis Eje(float centro, Vector2 rango, bool vuelta)
         {
             return new InputAxis
@@ -210,7 +215,7 @@ namespace BichiKart.Editor
                 Center = centro,
                 Range = rango,
                 Wrap = vuelta,
-                Recentering = new InputAxis.RecenteringSettings { Enabled = true, Wait = 1f, Time = 0.8f },
+                Recentering = new InputAxis.RecenteringSettings { Enabled = true, Wait = 1.5f, Time = 0.8f },
             };
         }
 

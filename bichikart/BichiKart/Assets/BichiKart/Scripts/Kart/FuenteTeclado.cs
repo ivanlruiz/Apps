@@ -6,12 +6,12 @@ namespace BichiKart
     /// <summary>
     /// Órdenes del jugador desde el teclado o el joystick.
     /// W/S o flechas: acelerar y frenar. A/D o flechas: doblar. Espacio: saltar. Shift: derrapar.
-    /// Ctrl: gravedad. Q: bocina.
+    /// Ctrl: gravedad. Q: bocina. F: usar (meterse en un caño).
     /// </summary>
     public sealed class FuenteTeclado : MonoBehaviour, IFuenteDeOrdenes
     {
-        private InputAction _avance, _giro, _saltar, _derrapar, _gravedad, _bocina;
-        private bool _saltarApretado, _gravedadApretada, _bocinaApretada;
+        private InputAction _avance, _giro, _saltar, _derrapar, _gravedad, _bocina, _usar;
+        private bool _saltarApretado, _gravedadApretada, _bocinaApretada, _usarApretado;
 
         private void Awake()
         {
@@ -29,6 +29,7 @@ namespace BichiKart
             _derrapar = Boton("Derrapar", "<Keyboard>/leftShift", "<Keyboard>/rightShift", "<Gamepad>/rightShoulder");
             _gravedad = Boton("Gravedad", "<Keyboard>/leftCtrl", "<Keyboard>/rightCtrl", "<Gamepad>/buttonNorth");
             _bocina = Boton("Bocina", "<Keyboard>/q", "<Gamepad>/leftShoulder");
+            _usar = Boton("Usar", "<Keyboard>/f", "<Gamepad>/buttonWest");
         }
 
         private void OnEnable()
@@ -53,6 +54,7 @@ namespace BichiKart
             _saltarApretado |= _saltar.WasPressedThisFrame();
             _gravedadApretada |= _gravedad.WasPressedThisFrame();
             _bocinaApretada |= _bocina.WasPressedThisFrame();
+            _usarApretado |= _usar.WasPressedThisFrame();
         }
 
         public OrdenesDelKart LeerOrdenes()
@@ -65,12 +67,14 @@ namespace BichiKart
                 Derrapar = _derrapar.IsPressed(),
                 Gravedad = _gravedadApretada,
                 Bocina = _bocinaApretada,
+                // Usar vale apretado o mantenido: se puede llegar a la boca con la F ya apretada.
+                Usar = _usarApretado || _usar.IsPressed(),
             };
-            _saltarApretado = _gravedadApretada = _bocinaApretada = false;
+            _saltarApretado = _gravedadApretada = _bocinaApretada = _usarApretado = false;
             return ordenes;
         }
 
-        private InputAction[] Acciones() => new[] { _avance, _giro, _saltar, _derrapar, _gravedad, _bocina };
+        private InputAction[] Acciones() => new[] { _avance, _giro, _saltar, _derrapar, _gravedad, _bocina, _usar };
 
         private static void Eje(InputAction accion, string negativo, string positivo)
         {

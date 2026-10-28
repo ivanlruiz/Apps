@@ -60,8 +60,11 @@ namespace BichiKart
         [Tooltip("Velocidad con la que despega hacia la superficie de enfrente al apretar el botón de gravedad.")]
         public float impulsoGravedad = 9f;
 
-        [Tooltip("Segundos de espera entre dos usos del botón de gravedad.")]
-        public float esperaGravedad = 0.4f;
+        [Tooltip("Segundos que tarda en recargarse el botón de gravedad sin la comida.")]
+        public float esperaGravedad = 2.5f;
+
+        [Tooltip("Segundos que tarda en recargarse el botón de gravedad llevando la comida (así no se escapa siempre).")]
+        public float esperaGravedadConComida = 5f;
 
         [Tooltip("Hasta qué distancia busca la superficie de enfrente.")]
         public float alcanceGravedad = 80f;
@@ -94,5 +97,8 @@ namespace BichiKart
 
         [Tooltip("Cuánto gana de velocidad por segundo con turbo.")]
         public float aceleracionTurbo = 45f;
+
+        [Tooltip("Qué parte del empujón del mini turbo recibe el que lleva la comida (de 0 a 1).")]
+        [Range(0f, 1f)] public float turboConComida = 0.3f;
     }
 }

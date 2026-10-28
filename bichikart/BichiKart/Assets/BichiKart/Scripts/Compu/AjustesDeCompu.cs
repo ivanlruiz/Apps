@@ -36,8 +36,8 @@ namespace BichiKart
         [Tooltip("Qué tan cerca (de costado) tiene que estar el objetivo en la superficie de enfrente para tirarse.")]
         public float distanciaParaGravedad = 8f;
 
-        [Tooltip("Segundos de espera entre dos usos de la gravedad.")]
-        public float esperaEntreGravedades = 4f;
+        [Tooltip("Segundos (de mínimo a máximo, al azar) que tarda en reaccionar cuando el kart que persigue, o del que escapa, usa la gravedad.")]
+        public Vector2 reaccionAGravedad = new Vector2(0.5f, 0.8f);
 
         [Header("Caño")]
         [Tooltip("Usa el caño para llegar a la otra punta o para escapar.")]

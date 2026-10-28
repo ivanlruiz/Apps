@@ -20,7 +20,7 @@ MonoBehaviour:
   anguloParaDerrapar: 55
   usaGravedad: 1
   distanciaParaGravedad: 8
-  esperaEntreGravedades: 4
+  reaccionAGravedad: {x: 0.5, y: 0.8}
   usaCanio: 1
   distanciaABoca: 10
   objetivoCercaDeLaOtraBoca: 14

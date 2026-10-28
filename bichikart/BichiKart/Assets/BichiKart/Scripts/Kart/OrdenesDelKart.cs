@@ -26,6 +26,9 @@ namespace BichiKart
 
         /// <summary>Se apretó la bocina desde el paso anterior.</summary>
         public bool Bocina;
+
+        /// <summary>Se mantiene apretado (o se apretó desde el paso anterior) usar: por ejemplo, meterse en un caño.</summary>
+        public bool Usar;
     }
 
     /// <summary>De dónde saca un kart sus órdenes.</summary>
