@@ -36,7 +36,7 @@ git pull
 
 1. Abrí **Unity Hub** → **Projects** → **Add** → **Add project from disk**.
 2. Elegí la carpeta `A:\Apps\bichikart\BichiKart`.
-3. El proyecto está hecho con **Unity 6000.0.62f1 LTS**. Si tenés otra versión de Unity 6, elegila en la columna "Editor Version" y aceptá actualizar el proyecto.
+3. El proyecto usa **Unity 6000.3.14f1** (Unity 6.3 LTS). Si tenés otra versión de Unity 6, elegila en la columna "Editor Version" y aceptá actualizar el proyecto.
 4. La primera vez tarda varios minutos, porque Unity descarga los paquetes y arma la carpeta `Library`.
 5. En la ventana **Project**, abrí `Assets/Scenes/SalaDePrueba` con doble clic.
 6. Apretá **Play**: la rebanada de pan flota y gira, y la antena de Blip se mueve.

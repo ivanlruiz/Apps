@@ -10,7 +10,7 @@ Este archivo resume **todo** lo que se habló en la primera conversación sobre 
 ## 1. Cómo quiere trabajar el usuario (importante)
 
 - Hablarle en **español rioplatense** (voseo).
-- **Preguntar TODO antes de hacer algo.** No programar, crear ni cambiar cosas sin aprobación. Antes de cada etapa, decir exactamente qué se va a hacer y esperar el sí.
+- **Al principio quería que se le preguntara todo.** Desde la etapa 2 cambió: Claude **avanza solo con lo técnico** (programar, probar en Unity, commit y push al cerrar cada hito) y le pregunta **solo cosas de diseño y mecánicas** del juego, porque quiere poder estar ausente mientras Claude trabaja. Cuando una duda de diseño no frena, Claude elige algo razonable y fácil de cambiar, y lo consulta después.
 - Prefiere **muchas preguntas** con opciones concretas para decidir.
 - **Sabe programar en C#**, pero hay que explicarle paso a paso lo de Unity, Git y la terminal.
 - Usa **Gemini** para los conceptos visuales y los trae para revisarlos.
@@ -138,13 +138,16 @@ El usuario eligió hacer primero un **proyecto base** para comprobar que abre bi
 
 ### 3.12 Primera conversación local
 
-- **Proyecto base probado** en Unity 6000.0.62f1: abre, compila sin errores y la sala de prueba se ve bien en Play.
+- **Proyecto base probado** en Unity **6000.3.14f1 (Unity 6.3 LTS)**: abre, compila sin errores y la sala de prueba se ve bien en Play.
+  - Unity Hub lo abrió con esa versión porque es la única de Unity 6 instalada, y lo actualizó (por ejemplo, URP pasó a 17.3.0). Se decidió quedarse con 6000.3.14f1. El mensaje del commit `c81d2c5` dice 6000.0.62f1 por error.
   - Solo aparece un aviso informativo de URP: las sombras de las 3 luces puntuales no entran enteras en la imagen de sombras de 2048×2048 y URP les baja la calidad. Se deja para cuando se arme la luz del prototipo.
   - Al abrirlo, Unity actualizó la configuración de URP y de Shader Graph, y creó `packages-lock.json` y `.vsconfig`. Se subieron a GitHub.
 - **Conversación con Gemini:** se llama "Ideas de nombres para videojuego" ("Argon" es el nombre del modelo de Gemini, no de la charla). Se leyó entera:
   - Su **revisión técnica** (kart, cámara, tuberías, compu y online) pasó a la sección **Notas técnicas** de `DISENO.md`.
   - En la parte de arte, Gemini habla de imágenes del Baño, el Cuarto de juguetes y la Nave que en realidad no generó. Siguen pendientes.
 - **Decisión sobre el online:** Gemini recomendó armar el prototipo con red desde el principio. Se decidió hacerlo **sin red, pero preparado**: las órdenes de cada kart vienen de una fuente intercambiable (teclado, compu o red) y las reglas viven en un solo lugar. Después del prototipo hay una **prueba de online** antes del arte, así que las etapas pasaron a ser 5.
+- **Conexión de Claude con Unity:** el usuario instaló Unity AI desde el menú **AI** del editor (paquetes `com.unity.ai.assistant` y `com.unity.ai.inference`). Con eso funciona el conector `unity-mcp`: Claude puede ver la escena y la consola, ejecutar código en el editor y sacar capturas.
+- **Plan de la etapa 2:** se acordó hacerla por hitos (detalle en la sección 6).
 
 ## 4. Todas las decisiones
 
@@ -153,7 +156,7 @@ El usuario eligió hacer primero un **proyecto base** para comprobar que abre bi
 | Tema | Decisión |
 |---|---|
 | Nombre | **BichiKart!** |
-| Motor | Unity 6 (URP) |
+| Motor | Unity 6.3 LTS (6000.3.14f1), con URP |
 | Dimensión | 3D |
 | Plataformas | Primero PC (teclado y mouse, también joystick); después celular |
 | Tiendas | Steam, itch.io y Google Play |
@@ -335,35 +338,42 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 |---|---|
 | Repo | `github.com/ivanlruiz/Apps`, bajado en **`A:\Apps`** |
 | Rama de trabajo | **`ccr-5e101442-8k3tts`** |
+| Versión de Unity | **6000.3.14f1** (Unity 6.3 LTS) |
+| Conexión con Claude | Unity AI (`com.unity.ai.assistant`) y el conector `unity-mcp` |
 | Documento de diseño | `bichikart/DISENO.md` |
 | Este historial | `bichikart/HISTORIAL.md` |
 | Instrucciones del proyecto | `bichikart/README.md` |
 | Imágenes | `bichikart/imagenes/`: `boceto-3d.png`, `menu-principal.png`, `bichitos.png`, `mapa-cocina.png` (concepto aprobado), `referencia-graficos.png` (acabado buscado) |
 | Proyecto de Unity | `bichikart/BichiKart/` (proyecto base, probado en Unity: abre y se ve bien) |
+| Escenas | `SalaDePrueba` (la sala del proyecto base) y `Prototipo` (donde se arma la etapa 2) |
+| Código | `Assets/BichiKart/Scripts` (juego), `Assets/BichiKart/Editor` (herramientas del editor) y `Assets/BichiKart/Pruebas` (pruebas automáticas) |
+| Pruebas automáticas | En Unity, menú **BichiKart → Correr pruebas**; el resultado sale en la consola |
 | Prototipo 2D viejo | Rama `bichikarts-2d-referencia`, carpeta `bichikarts/` |
 
 ## 6. Etapas y próximos pasos
 
 1. ~~Documento de diseño~~ (hecho).
-2. **Prototipo jugable contra la compu** con formas simples. **No empezar sin que el usuario lo confirme.** Plan propuesto:
-   - La Cocina en versión chica, como sala cerrada.
-   - Tu kart con:
-     - Cámara detrás que gira con vos y con el mouse.
-     - Ruedas que se pegan a paredes y techo.
-     - Ctrl para la gravedad.
-     - Salto, derrape, freno con marcha atrás y bocina.
-   - La rebanada de pan: agarrar, aguantar 20 s y robar con un toque (protección de un segundito y el robado sale despedido).
-   - Barra de tiempo, aro, flecha al dueño y minimapa.
-   - 3 rivales de la compu.
-   - Una tubería con viaje por adentro.
-   - Sin online, poderes ni arte final, pero con el código preparado para la red (ver **Notas técnicas** en `DISENO.md`).
+2. **Prototipo jugable contra la compu** con formas simples. Sin online, poderes ni arte final, pero con el código preparado para la red (ver **Notas técnicas** en `DISENO.md`). Se hace por hitos: Claude los avanza solo, los prueba en Unity y le pregunta al usuario solo lo de diseño.
+   - **Hito 0. Preparar el proyecto:** conexión con Unity, versión corregida en los documentos, paquetes (Cinemachine 3.1.7, Splines 2.8.4 e Input System 1.19.0), assembly definitions y escena `Prototipo`.
+   - **Hito 1. La sala y el kart en el piso:** la Cocina como caja cerrada con los rincones redondeados por dentro, 2 o 3 obstáculos, el kart (una esfera física invisible con el kart de Blip encima), W/S/A/D y la cámara detrás, que gira con el mouse y vuelve sola.
+   - **Hito 2. Paredes, techo y gravedad:** ruedas magnéticas, cámara que gira con vos (con anti-mareo) y Ctrl.
+   - **Hito 3. Salto, derrape y bocina.**
+   - **Hito 4. El pan y las reglas:** el árbitro de la partida con pruebas automáticas, la interfaz (barra, aro, flecha y minimapa) y 3 rivales de práctica.
+   - **Hito 5. La compu de verdad:** los rivales usan paredes, techo y gravedad.
+   - **Hito 6. La tubería:** un caño hecho con Splines entre un desagüe del piso y una rejilla del techo.
+   - **Hito 7. Ajuste final.**
+   - **Decisiones:**
+     - La sala tiene **medidas ajustables**, y arranca con un tamaño para 4 karts (el diseño dice que la versión chica es para 2).
+     - Además de las reglas básicas, entran el **rebote entre perseguidores**, la **caída por doble toque**, el **mejor de 3 rondas** y la **muerte súbita**.
+     - El **minimapa** es una vista de arriba: el ícono de cada kart cambia según esté en el piso, en una pared o en el techo.
+     - Cada hito se cierra con commit y push cuando Claude lo probó en Unity. El usuario lo prueba cuando puede.
 3. **Prueba de online**: dos PCs en la misma sala, con la comida y el robo, antes de invertir en arte.
 4. Bichitos, mapas y arte (modelos 3D).
 5. Online completo y partidas personalizadas.
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Lo próximo:** proponer el plan detallado de la etapa 2 y esperar el sí.
+**Ahora:** hito 1 de la etapa 2 (el hito 0 está hecho).
 
 ## 7. Pendientes del diseño
 

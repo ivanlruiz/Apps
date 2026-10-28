@@ -13,7 +13,7 @@ Este documento junta lo que se decidió hasta ahora. Todavía no hay nada progra
 | Tema | Decisión |
 |---|---|
 | Nombre | **BichiKart!** |
-| Motor | Unity 6 |
+| Motor | Unity 6.3 LTS (6000.3.14f1) |
 | Plataformas | Primero PC (teclado y mouse, también joystick). Después celular |
 | Tiendas | Steam, itch.io y Google Play |
 | Estilo visual | Caricatura redondita (tipo Fall Guys o Mario Kart), con URP y sombreado caricatura. Se empieza con formas simples y el arte lindo viene después (ver **Arte y estilo**) |
@@ -72,7 +72,7 @@ Se puede cambiar al crear la partida. La idea original contemplaba 25 segundos p
 ### Ubicar al que tiene la comida
 
 - **Flecha** en el borde de la pantalla que apunta al dueño.
-- **Minimapa** abajo a la derecha.
+- **Minimapa** abajo a la derecha, visto desde arriba: el ícono de cada kart cambia según esté en el piso, en una pared o en el techo.
 
 ### Tiempo de aguante en pantalla
 
