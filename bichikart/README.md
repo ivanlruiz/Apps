@@ -52,6 +52,8 @@ git pull
 | `BichiKart/Assets/BichiKart/Editor` | Herramientas del editor: armar las escenas Menu y Prototipo, y correr las pruebas |
 | `BichiKart/Assets/BichiKart/Pruebas` | Las pruebas automáticas |
 | `BichiKart/Assets/BichiKart/Ajustes` | Los números del manejo, de la partida, de cada nivel de la compu y las medidas de la sala |
+| `BichiKart/Assets/BichiKart/Resources/Bichitos` | Los modelos 3D de los seis bichitos (`.fbx`) |
+| `blender` | El script de Blender que arma los bichitos y los exporta a Unity (ver HISTORIAL, sección 9) |
 | `BichiKart/Assets/Settings` | La configuración de URP (PC y celular) y los efectos de imagen |
 | `BichiKart/Packages` | Los paquetes de Unity que usa el proyecto |
 | `BichiKart/ProjectSettings` | La configuración del proyecto (nombre, identificador, etc.) |

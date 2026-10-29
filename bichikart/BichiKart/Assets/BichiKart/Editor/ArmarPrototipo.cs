@@ -119,6 +119,7 @@ namespace BichiKart.Editor
             var modelo = chasis.AddComponent<ModeloKart>();
             modelo.ColorCarroceria = Formas.Hex(carroceria);
             modelo.ColorBichito = Formas.Hex(bichito);
+            modelo.Bichito = nombre;
 
             var kart = raiz.AddComponent<Kart>();
             kart.Configurar(ajustes, chasis.transform, 1 << capaSala);

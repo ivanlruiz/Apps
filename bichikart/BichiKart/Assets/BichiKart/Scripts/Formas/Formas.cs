@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -71,6 +72,44 @@ namespace BichiKart
             return Primitiva(PrimitiveType.Cylinder, nombre, padre, posicion, escala, rotacion, material);
         }
 
+        /// <summary>Una rosca (como un volante), acostada: el agujero mira hacia arriba (Y).</summary>
+        public Transform Rosca(string nombre, Transform padre, Vector3 posicion, float radio, float grosor, Quaternion rotacion, Material material)
+        {
+            const int vueltas = 32, lados = 12;
+            var vertices = new List<Vector3>();
+            var normales = new List<Vector3>();
+            var triangulos = new List<int>();
+            for (int i = 0; i <= vueltas; i++)
+            {
+                float a = i * Mathf.PI * 2f / vueltas;
+                var afuera = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                for (int j = 0; j <= lados; j++)
+                {
+                    float b = j * Mathf.PI * 2f / lados;
+                    var normal = afuera * Mathf.Cos(b) + Vector3.up * Mathf.Sin(b);
+                    vertices.Add(afuera * radio + normal * grosor);
+                    normales.Add(normal);
+                }
+            }
+            int fila = lados + 1;
+            for (int i = 0; i < vueltas; i++)
+            for (int j = 0; j < lados; j++)
+            {
+                int p = i * fila + j, q = p + fila;
+                triangulos.Add(p); triangulos.Add(p + 1); triangulos.Add(q);
+                triangulos.Add(q); triangulos.Add(p + 1); triangulos.Add(q + 1);
+            }
+            var malla = new Mesh { name = nombre };
+            malla.SetVertices(vertices);
+            malla.SetNormals(normales);
+            malla.SetTriangles(triangulos, 0);
+            malla.RecalculateBounds();
+            var t = Malla(nombre, padre, malla, material);
+            t.localPosition = posicion;
+            t.localRotation = rotacion;
+            return t;
+        }
+
         public Light Luz(string nombre, Transform padre, Vector3 posicion, Color color, float intensidad, float alcance, bool sombras)
         {
             var t = Nodo(nombre, padre);
@@ -99,6 +138,48 @@ namespace BichiKart
             go.GetComponent<MeshRenderer>().sharedMaterial = material;
             _creados.Add(go);
             return go.transform;
+        }
+
+        /// <summary>
+        /// Copia un modelo hecho en Blender (por ejemplo, un bichito de Resources) y le cambia los materiales
+        /// por los de acá. El nombre de cada material de Blender trae "#color|aspereza|brillo|laca"; así el
+        /// modelo queda igual que lo demás (y se puede desvanecer como el resto del kart).
+        /// </summary>
+        public Transform Modelo(string nombre, Transform padre, GameObject molde)
+        {
+            var copia = Object.Instantiate(molde, padre, false);
+            copia.name = nombre;
+            foreach (var t in copia.GetComponentsInChildren<Transform>(true))
+            {
+                t.gameObject.hideFlags = HideFlags.DontSave;
+                if (padre != null) t.gameObject.layer = padre.gameObject.layer;
+            }
+            foreach (var renderer in copia.GetComponentsInChildren<Renderer>(true))
+            {
+                var originales = renderer.sharedMaterials;
+                var nuevos = new Material[originales.Length];
+                for (int i = 0; i < originales.Length; i++) nuevos[i] = SegunNombre(originales[i]);
+                renderer.sharedMaterials = nuevos;
+            }
+            _creados.Add(copia);
+            return copia.transform;
+        }
+
+        /// <summary>
+        /// "#6fbcff|0.40|0.0|0.0": color, aspereza (lo contrario de la suavidad), brillo propio y laca. Al
+        /// exportar a FBX, Blender cambia las "|" por "_", así que valen las dos.
+        /// </summary>
+        private Material SegunNombre(Material original)
+        {
+            if (original == null) return Mat(Color.white, 0.5f);
+            var partes = original.name.Split('|', '_');
+            float Numero(int i, float siFalta) =>
+                partes.Length > i && float.TryParse(partes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : siFalta;
+
+            var color = Hex(partes[0].Trim());
+            float brillo = Numero(2, 0f);
+            if (brillo > 0f) return Emisivo(color, brillo);
+            return Mat(color, Mathf.Max(1f - Numero(1, 0.5f), Numero(3, 0f) * 0.85f));
         }
 
         // ------------------------------------------------------------------ materiales y texturas

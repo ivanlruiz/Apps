@@ -4,7 +4,8 @@ using UnityEngine;
 namespace BichiKart
 {
     /// <summary>
-    /// El kart que se ve, con Blip manejando, hecho con formas simples. Mientras se juega, las ruedas giran
+    /// El kart que se ve, hecho con formas simples, con su bichito manejando: un modelo hecho en Blender
+    /// (Resources/Bichitos; si falta, un Blip de formas simples). Mientras se juega, las ruedas giran
     /// con la velocidad, las de adelante doblan, la antena de Blip se bambolea al acelerar y frenar, el
     /// kart se cruza al derrapar (con chispas celestes que se ponen naranjas cuando el mini turbo está
     /// cargado) y los escapes tiran fuego con el turbo. Se puede desvanecer (<see cref="Alfa"/>), para cuando
@@ -16,13 +17,19 @@ namespace BichiKart
         private const float RadioRueda = 0.34f;
         private const float GiroAlDerrapar = 20f;
 
+        /// <summary>Dónde va el bichito: sentado en el kart, con la parte de abajo adentro del chasis.</summary>
+        private static readonly Vector3 Asiento = new Vector3(0f, 0.75f, -0.2f);
+
         private static readonly Color ChispaCargando = new Color(0.5f, 0.85f, 1f);
         private static readonly Color ChispaCargada = new Color(1f, 0.6f, 0.18f);
 
         [Tooltip("Color de la carrocería. Las ruedas son siempre negro azulado.")]
         [SerializeField] private Color colorCarroceria = new Color(1f, 0.624f, 0.11f);
 
-        [Tooltip("Color del bichito. Por ahora todos tienen la forma de Blip; las formas de cada uno llegan con el arte.")]
+        [Tooltip("Qué bichito maneja: el nombre de un modelo de Resources/Bichitos (Blip, Pulpi, Zorbo, Mukko, Kosmo o Klank).")]
+        [SerializeField] private string bichito = "Blip";
+
+        [Tooltip("Color del Blip de formas simples, que se usa solo si no está el modelo del bichito.")]
         [SerializeField] private Color colorBichito = new Color(0.56f, 0.83f, 1f);
 
         private Formas _formas;
@@ -34,6 +41,7 @@ namespace BichiKart
         private Material _materialChispas;
         private Transform _antena;
         private Color _colorArmado, _colorBichitoArmado;
+        private string _bichitoArmado;
         private float _vueltaRuedas;
         private float _velocidadAnterior;
         private float _inclinacionAntena;
@@ -77,6 +85,16 @@ namespace BichiKart
             }
         }
 
+        public string Bichito
+        {
+            get => bichito;
+            set
+            {
+                bichito = value;
+                if (isActiveAndEnabled) Construir();
+            }
+        }
+
         private void OnEnable()
         {
             _kart = GetComponentInParent<Kart>();
@@ -87,7 +105,7 @@ namespace BichiKart
 
         private void Update()
         {
-            if (colorCarroceria != _colorArmado || colorBichito != _colorBichitoArmado) Construir();
+            if (colorCarroceria != _colorArmado || colorBichito != _colorBichitoArmado || bichito != _bichitoArmado) Construir();
             if (Application.isPlaying) Animar(Time.deltaTime);
         }
 
@@ -114,7 +132,7 @@ namespace BichiKart
             _velocidadAnterior = velocidad;
             _inclinacionAntena = Mathf.Lerp(_inclinacionAntena, Mathf.Clamp(-aceleracion * 1.2f, -35f, 35f), 1f - Mathf.Exp(-6f * dt));
             float temblor = 4f + Mathf.Abs(velocidad) * 0.4f;
-            _antena.localRotation = Quaternion.Euler(_inclinacionAntena + Mathf.Sin(t * 9f) * temblor, 0f, Mathf.Cos(t * 7f) * temblor);
+            if (_antena != null) _antena.localRotation = Quaternion.Euler(_inclinacionAntena + Mathf.Sin(t * 9f) * temblor, 0f, Mathf.Cos(t * 7f) * temblor);
 
             // Chispas del derrape y fuego del turbo, que titilan.
             var colorChispa = _kart.CargaDerrape >= 1f ? ChispaCargada : ChispaCargando;
@@ -140,10 +158,11 @@ namespace BichiKart
             _formas = new Formas();
             _colorArmado = colorCarroceria;
             _colorBichitoArmado = colorBichito;
+            _bichitoArmado = bichito;
             _cuerpo = _formas.Nodo("Cuerpo", transform);
             ArmarKart();
             ArmarEfectos();
-            ArmarBlip();
+            ArmarBichito();
 
             // Los materiales del kart, para poder desvanecerlo (si estaba desvanecido, sigue igual).
             _materiales.Clear();
@@ -168,6 +187,9 @@ namespace BichiKart
             _formas.Caja("Alerón", _cuerpo, new Vector3(0f, 1.35f, -1.05f), new Vector3(1.7f, 0.1f, 0.4f), 0.05f, carroceria);
             _formas.Cilindro("Escape izquierdo", _cuerpo, new Vector3(-0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
             _formas.Cilindro("Escape derecho", _cuerpo, new Vector3(0.35f, 0.55f, -1.15f), new Vector3(0.18f, 0.12f, 0.18f), Quaternion.Euler(90f, 0f, 0f), metal);
+            // El volante: un aro inclinado hacia el bichito, bajito para no taparle la cara.
+            _formas.Cilindro("Columna del volante", _cuerpo, new Vector3(0f, 0.9f, 0.42f), new Vector3(0.05f, 0.1f, 0.05f), Quaternion.Euler(-35f, 0f, 0f), goma);
+            _formas.Rosca("Volante", _cuerpo, new Vector3(0f, 0.98f, 0.34f), 0.19f, 0.035f, Quaternion.Euler(-60f, 0f, 0f), goma);
 
             _ruedas.Clear();
             foreach (var x in new[] { -0.85f, 0.85f })
@@ -203,6 +225,45 @@ namespace BichiKart
                 llama.gameObject.SetActive(false);
                 _fuegos.Add(llama);
             }
+        }
+
+        /// <summary>El modelo del bichito, sentado en el asiento; si no está, el Blip de formas simples.</summary>
+        private void ArmarBichito()
+        {
+            _antena = null;
+            var molde = string.IsNullOrEmpty(bichito) ? null : Resources.Load<GameObject>($"Bichitos/{bichito}");
+            if (molde == null)
+            {
+                ArmarBlip();
+                return;
+            }
+            var modelo = _formas.Modelo(bichito, _cuerpo, molde);
+            modelo.localPosition = Asiento;
+            // Los modelos de Blender llegan mirando hacia atrás: se dan vuelta para que miren adonde va el kart.
+            modelo.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            ColgarAntena(modelo);
+        }
+
+        /// <summary>
+        /// Si el bichito tiene antena de resorte (Blip), el resorte y la bolita se cuelgan de un punto en la
+        /// base, para que se bamboleen al acelerar y frenar.
+        /// </summary>
+        private void ColgarAntena(Transform modelo)
+        {
+            Transform resorte = null, bolita = null;
+            foreach (var parte in modelo.GetComponentsInChildren<Transform>(true))
+            {
+                if (parte.name.EndsWith("Resorte")) resorte = parte;
+                else if (parte.name.EndsWith("Bolita")) bolita = parte;
+            }
+            var malla = resorte != null ? resorte.GetComponent<MeshFilter>() : null;
+            if (malla == null || malla.sharedMesh == null) return;
+
+            var limites = malla.sharedMesh.bounds;
+            _antena = _formas.Nodo("Antena", modelo);
+            _antena.position = resorte.TransformPoint(new Vector3(limites.center.x, limites.min.y, limites.center.z));
+            resorte.SetParent(_antena, true);
+            if (bolita != null) bolita.SetParent(_antena, true);
         }
 
         private void ArmarBlip()
