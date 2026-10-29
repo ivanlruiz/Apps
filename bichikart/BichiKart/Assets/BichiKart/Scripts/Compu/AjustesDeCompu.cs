@@ -42,6 +42,13 @@ namespace BichiKart
         [Tooltip("Segundos (de mínimo a máximo, al azar) que tarda en reaccionar cuando el kart que persigue, o del que escapa, usa la gravedad.")]
         public Vector2 reaccionAGravedad = new Vector2(0.5f, 0.8f);
 
+        [Header("Subir")]
+        [Tooltip("Si el que persigue se sube al terrón o al frasco, sube por una pared hasta el techo y se tira encima con la gravedad.")]
+        public bool subeAlto = true;
+
+        [Tooltip("Segundos que tarda en darse cuenta de que el otro se subió a algo.")]
+        public float esperaParaSubir = 1f;
+
         [Header("Caño")]
         [Tooltip("Usa el caño para llegar a la otra punta o para escapar.")]
         public bool usaCanio = true;

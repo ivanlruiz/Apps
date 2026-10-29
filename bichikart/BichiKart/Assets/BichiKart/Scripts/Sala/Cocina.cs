@@ -178,6 +178,9 @@ namespace BichiKart
                 Vector3.one * 3.2f, 0.45f, _formas.Mat(Formas.Hex("#fbfaf4"), 0.2f));
             terron.localRotation = Quaternion.Euler(0f, 18f, 0f);
             _obstaculos.Add(terron.gameObject.AddComponent<BoxCollider>());
+            terron.gameObject.AddComponent<Obstaculo>();
+            // Arriba resbala: se puede subir (tirándose desde el techo), pero no quedarse para siempre.
+            terron.gameObject.AddComponent<SuperficieResbalosa>();
             _escondites.Add(new Escondite(transform.TransformPoint(new Vector3(terron.localPosition.x, 0f, terron.localPosition.z)), 2.3f));
 
             // Frasco de mermelada con su etiqueta y su tapa.
@@ -189,11 +192,19 @@ namespace BichiKart
             colision.sharedMesh = vidrio.GetComponent<MeshFilter>().sharedMesh;
             colision.convex = true;
             _obstaculos.Add(colision);
+            vidrio.gameObject.AddComponent<Obstaculo>();
             _escondites.Add(new Escondite(transform.TransformPoint(frasco.localPosition), 2f));
             _formas.Cilindro("Etiqueta", frasco, new Vector3(0f, 2.6f, 0f), new Vector3(4.06f, 0.9f, 4.06f), Quaternion.identity,
                 _formas.Mat(Formas.Hex("#fff4dc"), 0.2f));
-            _formas.Cilindro("Tapa", frasco, new Vector3(0f, 5.85f, 0f), new Vector3(4.3f, 0.35f, 4.3f), Quaternion.identity,
+            var tapa = _formas.Cilindro("Tapa", frasco, new Vector3(0f, 5.85f, 0f), new Vector3(4.3f, 0.35f, 4.3f), Quaternion.identity,
                 _formas.Mat(Formas.Hex("#f2c14e"), 0.5f));
+            // La tapa también choca (así el kart se apoya arriba de ella) y resbala.
+            var choqueTapa = tapa.gameObject.AddComponent<MeshCollider>();
+            choqueTapa.sharedMesh = tapa.GetComponent<MeshFilter>().sharedMesh;
+            choqueTapa.convex = true;
+            _obstaculos.Add(choqueTapa);
+            tapa.gameObject.AddComponent<Obstaculo>();
+            tapa.gameObject.AddComponent<SuperficieResbalosa>();
         }
 
         private void ArmarMigas()

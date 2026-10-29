@@ -34,6 +34,7 @@ Este documento junta lo que se decidió hasta ahora. El prototipo jugable (etapa
 - El ladrón queda **protegido un segundito**, y al que le robaron sale **despedido** por el choque.
 - La comida solo se **cae** (y queda suelta) si te pega un poder o si **dos jugadores te tocan a la vez**.
 - Esconderse está permitido: los demás son más rápidos y ven al dueño en el minimapa.
+- Se puede caer arriba de un obstáculo (tirándose con la gravedad desde el techo), pero **arriba resbala**: no sirve para aguantar la comida para siempre. La compu también sabe llegar por el techo.
 - Los perseguidores **rebotan** entre ellos al chocarse.
 
 ### Tiempo para ganar (modo Clásico)
@@ -213,6 +214,7 @@ Todos manejan igual: son solo de aspecto. Los nombres son alienígenas inventado
 ### Cámara
 
 - Detrás del kart. Con el mouse se gira **una vuelta entera (360°)** para mirar alrededor.
+- Para arriba sube hasta casi encima del kart. Para abajo llega al ras del piso y, si se sigue, **levanta la mirada hacia el techo** (para ver a los que andan arriba).
 - **Vuelve sola** atrás del kart si dejás el mouse quieto 1,5 s **mientras manejás**; si estás quieto, queda donde la dejaste. El **clic de la ruedita** la centra enseguida.
 
 ### PC (teclado y mouse)

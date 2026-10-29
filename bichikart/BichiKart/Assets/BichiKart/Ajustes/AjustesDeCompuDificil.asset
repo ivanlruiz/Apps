@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AjustesDeCompuDificil
   m_EditorClassIdentifier: BichiKart::BichiKart.AjustesDeCompu
   reaccion: 0.25
+  velocidad: 1
   anguloGiroCompleto: 35
   anticipacion: 0.35
   distanciaParaEsquivar: 5
@@ -21,6 +22,8 @@ MonoBehaviour:
   usaGravedad: 1
   distanciaParaGravedad: 8
   reaccionAGravedad: {x: 0.5, y: 0.8}
+  subeAlto: 1
+  esperaParaSubir: 1
   usaCanio: 1
   distanciaABoca: 10
   objetivoCercaDeLaOtraBoca: 14

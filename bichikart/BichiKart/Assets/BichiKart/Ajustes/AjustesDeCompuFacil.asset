@@ -22,6 +22,8 @@ MonoBehaviour:
   usaGravedad: 1
   distanciaParaGravedad: 4
   reaccionAGravedad: {x: 1.2, y: 1.8}
+  subeAlto: 1
+  esperaParaSubir: 5
   usaCanio: 0
   distanciaABoca: 10
   objetivoCercaDeLaOtraBoca: 14

@@ -8,7 +8,8 @@ namespace BichiKart
     /// <item>Si la comida está suelta, va a buscarla.</item>
     /// <item>Si la tiene otro, lo persigue (un poco adelantado a donde va a estar). Si el dueño está en la
     /// superficie de enfrente, más o menos encima, usa la gravedad; si está cerca de la otra boca del caño,
-    /// se mete por el caño (apretando usar sobre la boca).</item>
+    /// se mete por el caño (apretando usar sobre la boca). Si se subió al terrón o al frasco, sube por una
+    /// pared hasta el techo, se pone encima y se tira con la gravedad justo donde está.</item>
     /// <item>Si la tiene él, se esconde detrás del terrón o del frasco; si alguien se acerca, escapa, y si lo
     /// tienen encima usa la gravedad o el caño para zafar.</item>
     /// </list>
@@ -28,8 +29,8 @@ namespace BichiKart
         private Vector3 _objetivo;
         private bool _quiereGravedad, _llego;
         private int _boca = -1;
-        private Kart _mirando;
-        private float _proximaDecision, _reaccionHasta;
+        private Kart _mirando, _tirarseSobre;
+        private float _proximaDecision, _reaccionHasta, _enAltoDesde = -1f;
         private float _trabado, _marchaAtras, _derrape;
         private float _ladoMarchaAtras = 1f;
 
@@ -88,7 +89,16 @@ namespace BichiKart
             }
             // Llegó a la boca que buscaba: se mete.
             if (_boca >= 0 && _tuberia != null && _tuberia.BocaAlAlcance(_kart) == _boca) ordenes.Usar = true;
+            // Desde el techo, se tira cuando va a caer justo arriba del otro.
+            if (_tirarseSobre != null && CaeEncima(_tirarseSobre)) ordenes.Gravedad = true;
             return ordenes;
+        }
+
+        private bool CaeEncima(Kart otro)
+        {
+            if (!_kart.GravedadLista || Time.time < _reaccionHasta || otro.Suelo == null) return false;
+            return _kart.PredecirCaida(out var punto, out var suelo) && suelo == otro.Suelo
+                && Vector3.Distance(punto, otro.Chasis.position) < 2.2f;
         }
 
         // ------------------------------------------------------------------ decisiones
@@ -100,6 +110,7 @@ namespace BichiKart
             _llego = false;
             _boca = -1;
             _mirando = null;
+            _tirarseSobre = null;
 
             if (arbitro.Duenio == Arbitro.Nadie)
             {
@@ -117,6 +128,7 @@ namespace BichiKart
                 Intencion = "Persigue";
                 var duenio = _partida.Participantes[arbitro.Duenio].Kart;
                 _mirando = duenio;
+                if (Subir(duenio)) return;
                 _objetivo = duenio.transform.position + duenio.Adelante * (duenio.VelocidadAdelante * ajustes.anticipacion);
                 PensarGravedad(duenio.transform.position, duenio.Arriba);
                 PensarCanio(duenio.transform.position, duenio.Arriba);
@@ -186,6 +198,60 @@ namespace BichiKart
             return true;
         }
 
+        /// <summary>
+        /// Si el dueño se subió al terrón o al frasco (y ya pasó la espera para darse cuenta), va a buscarlo
+        /// por arriba: desde el piso, a la pared más cercana; desde la pared, al techo encima de él; y desde
+        /// el techo, se pone encima y se tira con la gravedad cuando va a caer justo ahí.
+        /// </summary>
+        private bool Subir(Kart objetivo)
+        {
+            var cocina = _partida.Cocina;
+            bool enAlto = ajustes.subeAlto && objetivo.EnSuelo && cocina.EsObstaculo(objetivo.Suelo);
+            if (!enAlto)
+            {
+                _enAltoDesde = -1f;
+                return false;
+            }
+            if (_enAltoDesde < 0f) _enAltoDesde = Time.time;
+            if (Time.time - _enAltoDesde < ajustes.esperaParaSubir || _kart.Suelo == objetivo.Suelo) return false;
+
+            var arriba = cocina.transform.up;
+            float dondeEstoy = Vector3.Dot(_kart.Arriba, arriba);
+            if (dondeEstoy < -0.6f)
+            {
+                // Frena justo encima: si se tira andando, el envión lo lleva lejos del frasco.
+                Intencion = "Se tira desde el techo";
+                _objetivo = objetivo.transform.position;
+                _tirarseSobre = objetivo;
+                _llego = Vector3.ProjectOnPlane(_objetivo - _kart.transform.position, _kart.Arriba).magnitude < 1.5f;
+            }
+            else if (dondeEstoy > 0.6f)
+            {
+                Intencion = "Sube por la pared";
+                _objetivo = ParedMasCercana();
+            }
+            else
+            {
+                // En la pared: hacia arriba y hacia donde está, para llegar al techo justo encima.
+                Intencion = "Sube al techo";
+                _objetivo = objetivo.transform.position + arriba * cocina.Medidas.y * 2f;
+            }
+            return true;
+        }
+
+        /// <summary>Un punto a media altura de la pared más cercana (manejando hacia ahí, el kart sube por el rincón).</summary>
+        private Vector3 ParedMasCercana()
+        {
+            var cocina = _partida.Cocina;
+            var m = cocina.Medidas;
+            var aca = cocina.transform.InverseTransformPoint(_kart.transform.position);
+            bool costado = m.x * 0.5f - Mathf.Abs(aca.x) < m.z * 0.5f - Mathf.Abs(aca.z);
+            var pared = costado
+                ? new Vector3(Mathf.Sign(aca.x) * m.x * 0.5f, m.y * 0.5f, aca.z)
+                : new Vector3(aca.x, m.y * 0.5f, Mathf.Sign(aca.z) * m.z * 0.5f);
+            return cocina.transform.TransformPoint(pared);
+        }
+
         /// <summary>Si el objetivo está en la superficie de enfrente, más o menos encima, conviene tirarse.</summary>
         private void PensarGravedad(Vector3 objetivo, Vector3 arribaDelObjetivo)
         {
@@ -242,8 +308,11 @@ namespace BichiKart
 
             float giro = Esquivar(Mathf.Clamp(angulo / ajustes.anguloGiroCompleto, -1f, 1f));
             float avance = Mathf.Abs(angulo) > 110f ? 0.45f : 1f;
-            if (_llego) avance = 0f;
+            // Llegó: frena (no se deja ir).
+            if (_llego) avance = _kart.VelocidadAdelante > 1f ? -1f : 0f;
             else if (distancia < 3f) avance = Mathf.Min(avance, 0.4f + distancia / 5f);
+            // Para ponerse encima de alguien hay que llegar despacio: rápido no dobla tan cerrado y da vueltas alrededor.
+            if (_tirarseSobre != null && !_llego) avance = Mathf.Min(avance, Mathf.Clamp(distancia / 6f, 0.2f, 1f) * (Mathf.Abs(angulo) > 40f ? 0.4f : 1f));
 
             // Derrapa en las curvas cerradas yendo rápido; al enderezar, suelta (y sale el mini turbo).
             if (ajustes.derrapa && _derrape <= 0f && Mathf.Abs(angulo) > ajustes.anguloParaDerrapar && _kart.VelocidadAdelante > 11f) _derrape = 1.3f;

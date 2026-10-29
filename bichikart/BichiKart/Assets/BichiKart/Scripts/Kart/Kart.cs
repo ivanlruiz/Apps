@@ -34,6 +34,7 @@ namespace BichiKart
         private float _cargaDerrape;
         private float _turbo;
         private float _aturdido;
+        private SuperficieResbalosa _resbalosa;
 
         /// <summary>De dónde salen las órdenes. Si no se asigna, se busca en el mismo objeto.</summary>
         public IFuenteDeOrdenes Fuente { get; set; }
@@ -58,6 +59,9 @@ namespace BichiKart
         public Vector3 Arriba => _arriba;
 
         public bool EnSuelo { get; private set; }
+
+        /// <summary>Sobre qué está apoyado (null en el aire): el piso, una pared, el terrón, el frasco...</summary>
+        public Collider Suelo { get; private set; }
 
         /// <summary>Velocidad hacia donde mira el kart (negativa en marcha atrás).</summary>
         public float VelocidadAdelante { get; private set; }
@@ -104,6 +108,8 @@ namespace BichiKart
             _rb.isKinematic = true;
             _rb.detectCollisions = false;
             EnSuelo = false;
+            Suelo = null;
+            _resbalosa = null;
             CayendoPorGravedad = false;
             Derrapando = false;
             DireccionDerrape = 0;
@@ -209,6 +215,8 @@ namespace BichiKart
             DireccionDerrape = 0;
             EnCanio = false;
             CayendoPorGravedad = false;
+            Suelo = null;
+            _resbalosa = null;
 
             var centro = sobreElPiso + _arriba * ajustes.radioEsfera;
             transform.position = centro;
@@ -268,13 +276,23 @@ namespace BichiKart
                 _despegue -= dt;
                 toca = false;
             }
+            // Arriba del terrón o del frasco las ruedas magnéticas no tuercen la gravedad, y en sus bordes y
+            // costados no se apoya: de ahí se cae al piso (no queda colgado del costado).
+            bool obstaculo = toca && EsObstaculo(golpe.collider);
+            if (obstaculo && Vector3.Dot(golpe.normal, -_gravedad) < 0.8f) toca = false;
             EnSuelo = toca;
             if (toca) CayendoPorGravedad = false;
+            var suelo = toca ? golpe.collider : null;
+            if (suelo != Suelo)
+            {
+                Suelo = suelo;
+                _resbalosa = suelo != null ? suelo.GetComponent<SuperficieResbalosa>() : null;
+            }
             float suavizado = 1f - Mathf.Exp(-ajustes.alineacion * dt);
 
             // Ruedas magnéticas: apoyado, la gravedad tira hacia la superficie que tiene abajo. Así, al pasar
             // por un rincón redondeado, el kart sube por la pared y sigue hasta el techo.
-            if (toca && ajustes.ruedasMagneticas)
+            if (toca && ajustes.ruedasMagneticas && !obstaculo)
                 _gravedad = Vector3.Slerp(_gravedad, -golpe.normal, suavizado).normalized;
 
             var arribaBuscado = toca ? golpe.normal : -_gravedad;
@@ -283,6 +301,19 @@ namespace BichiKart
             // alrededor de hacia dónde mira, y no hacia un costado cualquiera.
             if (Vector3.Dot(_arriba, arribaBuscado) < -0.95f) _arriba = Quaternion.AngleAxis(12f, _adelante) * _arriba;
             _arriba = Vector3.Slerp(_arriba, arribaBuscado, suavizado).normalized;
+        }
+
+        private Collider _ultimoRevisado;
+        private bool _ultimoEsObstaculo;
+
+        private bool EsObstaculo(Collider collider)
+        {
+            if (collider != _ultimoRevisado)
+            {
+                _ultimoRevisado = collider;
+                _ultimoEsObstaculo = collider != null && collider.GetComponent<Obstaculo>() != null;
+            }
+            return _ultimoEsObstaculo;
         }
 
         /// <summary>
@@ -311,21 +342,47 @@ namespace BichiKart
         {
             punto = normal = Vector3.zero;
             if (_rb == null || EnCanio) return false;
-            var posicion = _rb.position;
-            if (!Physics.Raycast(posicion, _gravedad, out var golpe, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore)) return false;
-
             var v = _rb.linearVelocity;
             float hacia = Vector3.Dot(v, _gravedad);
-            float distancia = Mathf.Max(0f, golpe.distance - ajustes.radioEsfera);
-            float g = Mathf.Max(ajustes.gravedad, 0.01f);
-            float tiempo = (-hacia + Mathf.Sqrt(Mathf.Max(0f, hacia * hacia + 2f * g * distancia))) / g;
-            var deCostado = v - _gravedad * hacia;
+            return Caida(_rb.position, _gravedad, hacia, v - _gravedad * hacia, out punto, out normal, out _);
+        }
 
-            var arriba = posicion + deCostado * tiempo - _gravedad * 0.5f;
-            if (Physics.Raycast(arriba, _gravedad, out var caida, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore))
+        /// <summary>
+        /// Dónde caería si usara la gravedad ahora mismo, y sobre qué (la compu lo usa para tirarse justo
+        /// encima de alguien).
+        /// </summary>
+        public bool PredecirCaida(out Vector3 punto, out Collider suelo)
+        {
+            punto = Vector3.zero;
+            suelo = null;
+            if (_rb == null || EnCanio || !EnSuelo) return false;
+            var deCostado = Vector3.ProjectOnPlane(_rb.linearVelocity, _arriba);
+            return Caida(_rb.position, _arriba, ajustes.impulsoGravedad, deCostado, out punto, out _, out suelo);
+        }
+
+        /// <summary>
+        /// Cayendo hacia <paramref name="direccion"/> con una velocidad hacia allá y otra de costado: cuánto
+        /// tarda en llegar (con la gravedad) y dónde toca. Se calcula varias veces, porque al correrse de
+        /// costado puede caer sobre otra cosa (por ejemplo, arriba del frasco en vez del piso).
+        /// </summary>
+        private bool Caida(Vector3 posicion, Vector3 direccion, float hacia, Vector3 deCostado, out Vector3 punto, out Vector3 normal, out Collider suelo)
+        {
+            punto = normal = Vector3.zero;
+            suelo = null;
+            if (!Physics.Raycast(posicion, direccion, out var golpe, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore)) return false;
+
+            float g = Mathf.Max(ajustes.gravedad, 0.01f);
+            for (int vuelta = 0; vuelta < 3; vuelta++)
+            {
+                float distancia = Mathf.Max(0f, Vector3.Dot(golpe.point - posicion, direccion) - ajustes.radioEsfera);
+                float tiempo = (-hacia + Mathf.Sqrt(Mathf.Max(0f, hacia * hacia + 2f * g * distancia))) / g;
+                var desde = posicion + deCostado * tiempo - direccion * 0.5f;
+                if (!Physics.Raycast(desde, direccion, out var caida, ajustes.alcanceGravedad, capaSuelo, QueryTriggerInteraction.Ignore)) break;
                 golpe = caida;
+            }
             punto = golpe.point;
             normal = golpe.normal;
+            suelo = golpe.collider;
             return true;
         }
 
@@ -409,9 +466,14 @@ namespace BichiKart
             float sentido = vAdelante < -0.1f ? -1f : 1f;
             adelante = Quaternion.AngleAxis(giro * ajustes.giro * factor * sentido * control * dt, _arriba) * adelante;
 
+            // Sobre una superficie resbalosa se agarra menos (y sin acelerar casi no frena).
+            var resbalosa = EnSuelo && _resbalosa != null && _resbalosa.isActiveAndEnabled ? _resbalosa : null;
+            float agarreDelSuelo = resbalosa != null ? resbalosa.agarre : 1f;
+
             if (EnSuelo)
             {
                 CalcularAvance(ordenes.Avance, vAdelante, out float objetivo, out float tasa);
+                if (objetivo == 0f && Mathf.Abs(ordenes.Avance) <= 0.01f) tasa *= agarreDelSuelo;
                 vAdelante = Mathf.MoveTowards(vAdelante, objetivo, tasa * dt);
 
                 // Sin derrapar, el deslizamiento de costado se frena rápido. Derrapando, el kart se desliza un
@@ -422,7 +484,7 @@ namespace BichiKart
                     Vector3 derecha = Vector3.Cross(_arriba, adelante);
                     lateralBuscado = derecha * (-DireccionDerrape * Mathf.Abs(vAdelante) * ajustes.deslizamientoDerrape);
                 }
-                float agarre = Derrapando ? ajustes.agarreDerrape : ajustes.agarre;
+                float agarre = (Derrapando ? ajustes.agarreDerrape : ajustes.agarre) * agarreDelSuelo;
                 vLateral = Vector3.Lerp(lateralBuscado, vLateral, Mathf.Exp(-agarre * dt));
             }
 
@@ -430,6 +492,9 @@ namespace BichiKart
             _adelante = adelante;
             VelocidadAdelante = vAdelante;
             _rb.linearVelocity = adelante * vAdelante + vLateral + vNormal;
+
+            // Y lo resbaloso lo empuja hacia el borde.
+            if (resbalosa != null) _rb.linearVelocity += resbalosa.Empuje(_rb.position, _arriba) * dt;
         }
 
         private void CalcularAvance(float avance, float vAdelante, out float objetivo, out float tasa)

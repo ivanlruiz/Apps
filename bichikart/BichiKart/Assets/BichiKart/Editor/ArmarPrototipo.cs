@@ -162,6 +162,7 @@ namespace BichiKart.Editor
             a.seEsconde = false;
             a.distanciaParaHuir = 5f;
             a.reaccionAGravedad = new Vector2(1.2f, 1.8f);
+            a.esperaParaSubir = 5f;
         }
 
         /// <summary>Entre las dos: usa todo, pero más tarde y un poco más lenta que Difícil.</summary>
@@ -174,6 +175,7 @@ namespace BichiKart.Editor
             a.distanciaParaGravedad = 6f;
             a.distanciaParaHuir = 7f;
             a.reaccionAGravedad = new Vector2(0.8f, 1.2f);
+            a.esperaParaSubir = 2.5f;
         }
 
         private static void CrearInterfaz(Partida partida, Camera camara)
@@ -217,8 +219,9 @@ namespace BichiKart.Editor
             seguimiento.QuaternionDamping = 0.25f;
             orbita.TrackerSettings = seguimiento;
             orbita.HorizontalAxis = Eje(0f, new Vector2(-180f, 180f), true);
-            // Un poco desde arriba, para ver por encima de la comida cuando la llevás.
-            orbita.VerticalAxis = Eje(21f, new Vector2(-5f, 55f), false);
+            // Arranca un poco desde arriba, para ver por encima de la comida cuando la llevás. Sube hasta casi
+            // encima del kart y baja hasta el ras del piso; más abajo, CamaraDelKart levanta la mirada al techo.
+            orbita.VerticalAxis = Eje(21f, new Vector2(-5f, 85f), false);
 
             var mira = go.AddComponent<CinemachineRotationComposer>();
             mira.TargetOffset = new Vector3(0f, 1.3f, 0f);

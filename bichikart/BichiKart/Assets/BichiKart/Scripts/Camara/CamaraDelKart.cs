@@ -10,14 +10,22 @@ namespace BichiKart
     /// la vuelve sola atrás del kart después de la espera del eje (1,5 s); quieto, queda donde la dejaste.
     /// El clic de la ruedita (o apretar el stick derecho) la centra enseguida. Para usar el mouse hay que
     /// hacer clic en el juego; en pausa el mouse queda suelto. La cámara gira con el kart cuando sube por
-    /// las paredes o va por el techo; con el anti-mareo ese giro es más lento. La sensibilidad, invertir
-    /// vertical y el anti-mareo salen de las <see cref="Opciones"/>.
+    /// las paredes o va por el techo; con el anti-mareo ese giro es más lento. Para arriba se puede mirar
+    /// desde casi encima del kart; para abajo la cámara llega al ras del piso y, si se sigue, levanta la
+    /// mirada hacia el techo. La sensibilidad, invertir vertical y el anti-mareo salen de las
+    /// <see cref="Opciones"/>.
     /// </summary>
     [RequireComponent(typeof(CinemachineOrbitalFollow))]
     public sealed class CamaraDelKart : MonoBehaviour
     {
         [Tooltip("Grados por segundo que gira la cámara con el stick a fondo.")]
         [SerializeField] private float sensibilidadJoystick = 140f;
+
+        [Tooltip("Grados de mouse, pasado el límite de abajo, para levantar la mirada del todo.")]
+        [SerializeField] private float gradosParaMirarArriba = 60f;
+
+        [Tooltip("Cuánto sube el punto al que mira la cámara cuando se mira para arriba del todo.")]
+        [SerializeField] private float subidaDeLaMirada = 10f;
 
         [Tooltip("Segundos que tarda la cámara en acompañar el giro del kart (normal y con anti-mareo).")]
         [SerializeField] private float suavizadoGiro = 0.25f, suavizadoAntiMareo = 1f;
@@ -26,13 +34,21 @@ namespace BichiKart
         [SerializeField] private float distanciaEnCanio = 2.6f;
 
         private CinemachineOrbitalFollow _orbita;
+        private CinemachineRotationComposer _mira;
+        private Vector3 _miraNormal;
         private Kart _kart;
         private float _distanciaNormal;
         private bool _centrando;
 
+        /// <summary>De 0 a 1: cuánto se levantó la mirada hacia el techo.</summary>
+        private float _mirarArriba;
+        private float _ultimoGiro;
+
         private void Awake()
         {
             _orbita = GetComponent<CinemachineOrbitalFollow>();
+            _mira = GetComponent<CinemachineRotationComposer>();
+            if (_mira != null) _miraNormal = _mira.TargetOffset;
             _distanciaNormal = _orbita.Radius;
             var objetivo = GetComponent<CinemachineCamera>().Target.TrackingTarget;
             if (objetivo != null) _kart = objetivo.GetComponentInParent<Kart>();
@@ -64,11 +80,34 @@ namespace BichiKart
             {
                 // Cinemachine nota el cambio de valor y espera a que se suelte para volver la cámara atrás.
                 _centrando = false;
+                _ultimoGiro = Time.unscaledTime;
                 _orbita.HorizontalAxis.Value = _orbita.HorizontalAxis.ClampValue(_orbita.HorizontalAxis.Value + giro.x);
-                float vertical = Opciones.InvertirVertical ? giro.y : -giro.y;
-                _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + vertical);
+                MoverVertical(Opciones.InvertirVertical ? giro.y : -giro.y);
             }
             Recentrar(mouse, joystick);
+            if (_mira != null) _mira.TargetOffset = _miraNormal + Vector3.up * (_mirarArriba * subidaDeLaMirada);
+        }
+
+        /// <summary>
+        /// Sube o baja la cámara. Más abajo del límite del eje (al ras del piso), en vez de meterla debajo del
+        /// piso (que la empuja contra el kart y no deja ver nada), levanta la mirada hacia el techo.
+        /// </summary>
+        private void MoverVertical(float grados)
+        {
+            if (grados < 0f)
+            {
+                float hastaElPiso = Mathf.Max(0f, _orbita.VerticalAxis.Value - _orbita.VerticalAxis.Range.x);
+                float bajar = Mathf.Min(-grados, hastaElPiso);
+                _orbita.VerticalAxis.Value -= bajar;
+                _mirarArriba = Mathf.Clamp01(_mirarArriba + (-grados - bajar) / gradosParaMirarArriba);
+            }
+            else
+            {
+                // Primero baja la mirada; después sube la cámara.
+                float bajarMirada = Mathf.Min(grados, _mirarArriba * gradosParaMirarArriba);
+                _mirarArriba -= bajarMirada / gradosParaMirarArriba;
+                _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + grados - bajarMirada);
+            }
         }
 
         /// <summary>
@@ -79,6 +118,13 @@ namespace BichiKart
         {
             bool centrarYa = (mouse != null && mouse.middleButton.wasPressedThisFrame)
                 || (joystick != null && joystick.rightStickButton.wasPressedThisFrame);
+            var ordenes = _kart != null ? _kart.UltimasOrdenes : default;
+            bool manejando = Mathf.Abs(ordenes.Avance) > 0.1f || Mathf.Abs(ordenes.Giro) > 0.1f || (_kart != null && _kart.EnCanio);
+
+            // La mirada vuelve a la altura normal cuando vuelve la cámara (manejando sin tocar el mouse, o al centrarla).
+            bool volverMirada = centrarYa || _centrando || (manejando && Time.unscaledTime - _ultimoGiro > _orbita.VerticalAxis.Recentering.Wait);
+            if (volverMirada) _mirarArriba = Mathf.MoveTowards(_mirarArriba, 0f, Time.unscaledDeltaTime / 0.6f);
+
             if (centrarYa)
             {
                 _centrando = true;
@@ -93,8 +139,6 @@ namespace BichiKart
                 return;
             }
 
-            var ordenes = _kart != null ? _kart.UltimasOrdenes : default;
-            bool manejando = Mathf.Abs(ordenes.Avance) > 0.1f || Mathf.Abs(ordenes.Giro) > 0.1f || (_kart != null && _kart.EnCanio);
             if (manejando) return;
             _orbita.HorizontalAxis.CancelRecentering();
             _orbita.VerticalAxis.CancelRecentering();
