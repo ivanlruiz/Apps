@@ -27,6 +27,9 @@ namespace BichiKart
         [Tooltip("Cuánto sube el punto al que mira la cámara cuando se mira para arriba del todo.")]
         [SerializeField] private float subidaDeLaMirada = 10f;
 
+        [Tooltip("Si la cámara se le acerca al kart (por ejemplo, empujada por una pared), el kart se desvanece: se ve entero a esta distancia o más y desaparece a la segunda.")]
+        [SerializeField] private float distanciaVisible = 4.5f, distanciaInvisible = 1.5f;
+
         [Tooltip("Segundos que tarda la cámara en acompañar el giro del kart (normal y con anti-mareo).")]
         [SerializeField] private float suavizadoGiro = 0.25f, suavizadoAntiMareo = 1f;
 
@@ -37,6 +40,8 @@ namespace BichiKart
         private CinemachineRotationComposer _mira;
         private Vector3 _miraNormal;
         private Kart _kart;
+        private ModeloKart _modelo;
+        private Camera _camara;
         private float _distanciaNormal;
         private bool _centrando;
 
@@ -52,6 +57,21 @@ namespace BichiKart
             _distanciaNormal = _orbita.Radius;
             var objetivo = GetComponent<CinemachineCamera>().Target.TrackingTarget;
             if (objetivo != null) _kart = objetivo.GetComponentInParent<Kart>();
+            if (_kart != null && _kart.Chasis != null) _modelo = _kart.Chasis.GetComponent<ModeloKart>();
+        }
+
+        /// <summary>
+        /// El kart de esta cámara (solo ese) se desvanece de a poco cuanto más se le acerca la cámara, para que
+        /// no tape la vista cuando una pared o el piso la empujan contra él.
+        /// </summary>
+        private void LateUpdate()
+        {
+            if (_modelo == null) return;
+            if (_camara == null) _camara = Camera.main;
+            if (_camara == null) return;
+            var centro = _kart.Chasis.position + _kart.Arriba * 0.6f;
+            float distancia = Vector3.Distance(_camara.transform.position, centro);
+            _modelo.Alfa = Mathf.InverseLerp(distanciaInvisible, distanciaVisible, distancia);
         }
 
         private void OnDisable() => SoltarMouse();

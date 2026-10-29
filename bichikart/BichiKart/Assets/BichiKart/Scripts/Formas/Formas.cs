@@ -159,6 +159,34 @@ namespace BichiKart
 
         public static Color Hex(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.magenta;
 
+        /// <summary>
+        /// Qué tan visible es un material, de 0 (invisible) a 1 (opaco). Por debajo de 1 lo pasa a
+        /// transparente (shader Lit de URP); en 1 lo vuelve a opaco, que se dibuja mejor. En Resources hay
+        /// materiales transparentes de muestra para que el juego compilado traiga esa versión del shader.
+        /// </summary>
+        public static void PonerAlfa(Material material, float alfa)
+        {
+            bool transparente = alfa < 0.999f;
+            if (material.HasProperty("_Surface"))
+            {
+                material.SetFloat("_Surface", transparente ? 1f : 0f);
+                material.SetFloat("_Blend", 0f);
+                material.SetFloat("_SrcBlend", transparente ? (float)BlendMode.SrcAlpha : (float)BlendMode.One);
+                material.SetFloat("_DstBlend", transparente ? (float)BlendMode.OneMinusSrcAlpha : (float)BlendMode.Zero);
+                material.SetFloat("_SrcBlendAlpha", 1f);
+                material.SetFloat("_DstBlendAlpha", transparente ? (float)BlendMode.OneMinusSrcAlpha : (float)BlendMode.Zero);
+                material.SetFloat("_ZWrite", transparente ? 0f : 1f);
+                material.SetOverrideTag("RenderType", transparente ? "Transparent" : "Opaque");
+                material.renderQueue = transparente ? (int)RenderQueue.Transparent : -1;
+                if (transparente) material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                else material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            }
+            var propiedad = material.HasProperty("_BaseColor") ? "_BaseColor" : "_Color";
+            var color = material.GetColor(propiedad);
+            color.a = Mathf.Clamp01(alfa);
+            material.SetColor(propiedad, color);
+        }
+
         /// <summary>Que no proyecte sombras (para cosas que brillan o que están pegadas a una pared).</summary>
         public static void SinSombra(Transform t)
         {

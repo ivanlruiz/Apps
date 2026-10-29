@@ -7,7 +7,8 @@ namespace BichiKart
     /// El kart que se ve, con Blip manejando, hecho con formas simples. Mientras se juega, las ruedas giran
     /// con la velocidad, las de adelante doblan, la antena de Blip se bambolea al acelerar y frenar, el
     /// kart se cruza al derrapar (con chispas celestes que se ponen naranjas cuando el mini turbo está
-    /// cargado) y los escapes tiran fuego con el turbo. Se arma desde código y no se guarda en la escena.
+    /// cargado) y los escapes tiran fuego con el turbo. Se puede desvanecer (<see cref="Alfa"/>), para cuando
+    /// la cámara se le pega. Se arma desde código y no se guarda en la escena.
     /// </summary>
     [ExecuteAlways]
     public sealed class ModeloKart : MonoBehaviour
@@ -37,6 +38,24 @@ namespace BichiKart
         private float _velocidadAnterior;
         private float _inclinacionAntena;
         private float _giroCuerpo;
+        private float _alfa = 1f;
+        private readonly List<Material> _materiales = new List<Material>();
+
+        /// <summary>
+        /// Qué tan visible se ve el kart (con su bichito), de 0 a 1. Lo baja la cámara del jugador cuando se
+        /// le acerca demasiado, para que el kart no le tape la vista.
+        /// </summary>
+        public float Alfa
+        {
+            get => _alfa;
+            set
+            {
+                value = Mathf.Clamp01(value);
+                if (Mathf.Approximately(value, _alfa)) return;
+                _alfa = value;
+                foreach (var material in _materiales) Formas.PonerAlfa(material, _alfa);
+            }
+        }
 
         public Color ColorCarroceria
         {
@@ -99,7 +118,7 @@ namespace BichiKart
 
             // Chispas del derrape y fuego del turbo, que titilan.
             var colorChispa = _kart.CargaDerrape >= 1f ? ChispaCargada : ChispaCargando;
-            _materialChispas.SetColor("_BaseColor", colorChispa);
+            _materialChispas.SetColor("_BaseColor", new Color(colorChispa.r, colorChispa.g, colorChispa.b, _alfa));
             _materialChispas.SetColor("_EmissionColor", colorChispa * 1.8f);
             for (int i = 0; i < _chispas.Count; i++)
             {
@@ -125,6 +144,13 @@ namespace BichiKart
             ArmarKart();
             ArmarEfectos();
             ArmarBlip();
+
+            // Los materiales del kart, para poder desvanecerlo (si estaba desvanecido, sigue igual).
+            _materiales.Clear();
+            foreach (var renderer in _cuerpo.GetComponentsInChildren<Renderer>(true))
+            foreach (var material in renderer.sharedMaterials)
+                if (material != null && !_materiales.Contains(material)) _materiales.Add(material);
+            if (_alfa < 1f) foreach (var material in _materiales) Formas.PonerAlfa(material, _alfa);
         }
 
         private void ArmarKart()
@@ -204,6 +230,7 @@ namespace BichiKart
             _ruedas.Clear();
             _chispas.Clear();
             _fuegos.Clear();
+            _materiales.Clear();
             _materialChispas = null;
             _antena = null;
         }
