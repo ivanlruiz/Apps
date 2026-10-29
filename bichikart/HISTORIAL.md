@@ -370,7 +370,8 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
      - **Caño con F** (Argon la recomendó porque E queda para los poderes): cartel-globito arriba de cada boca con la F, chiquito desde 8 de distancia y grande y saltando cuando ya se puede entrar (a menos de 2,6 de la boca). Se puede llegar con la F ya apretada. Joystick: X.
      - **Cámara 360°**: más sensible (0,25° por punto en vez de 0,12°); vuelve sola a los 1,5 s solo mientras manejás; clic de la ruedita (o stick derecho apretado) para centrarla.
      - **Extras:** el que lleva el pan recibe el 30 % del mini turbo, y la compu tarda **0,5 a 0,8 s** en reaccionar cuando el kart que mira usa la gravedad.
-     - Quedó sin aclarar si "Caño o choques" se refería a algo más que la entrada automática.
+     - "Caño o choques" era solo por la entrada automática al caño (ya resuelto con la F).
+     - **Segunda vuelta:** el usuario jugó la primera vuelta: "es bastante complicado, los bots son difíciles, pero está bueno". Le costaba tanto aguantar el pan como alcanzar al bot que lo tenía. Eligió **niveles de la compu** (Fácil, Normal y Difícil): lo que había quedó como Difícil, la partida arranca en Normal, y por ahora se cambia con las teclas 1, 2 y 3. Cada nivel es un archivo de ajustes; se sumó **Velocidad** (qué parte de su velocidad máxima usa la compu).
    - **Decisiones:**
      - La sala tiene **medidas ajustables**, y arranca con un tamaño para 4 karts (el diseño dice que la versión chica es para 2).
      - Además de las reglas básicas, entran el **rebote entre perseguidores**, la **caída por doble toque**, el **mejor de 3 rondas** y la **muerte súbita**.
@@ -383,7 +384,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 7 de la etapa 2, el ajuste final (los hitos 0 a 6 están hechos). Ya está la primera vuelta de ajustes (gravedad con espera, caño con F, cámara 360°); falta que el usuario la juegue y cuente si ahora es difícil pero justo.
+**Ahora:** hito 7 de la etapa 2, el ajuste final (los hitos 0 a 6 están hechos). Ya están la primera vuelta de ajustes (gravedad con espera, caño con F, cámara 360°) y los niveles de la compu; falta que el usuario pruebe Fácil, Normal y Difícil y cuente si cada uno se siente bien.
 
 ## 7. Pendientes del diseño
 
@@ -424,17 +425,18 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 | Q | Bocina | LB |
 | Mouse | Girar la cámara (vuelta entera) | Stick derecho |
 | Clic de la ruedita | Centrar la cámara | Stick derecho apretado |
+| 1 / 2 / 3 | Compu en Fácil / Normal / Difícil | — |
 
 Para pasar a las paredes y al techo, alcanza con manejar hacia un rincón: las ruedas son magnéticas.
 
-La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de práctica (Pulpi, Zorbo y Mukko). En pantalla:
+La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de la compu (Pulpi, Zorbo y Mukko) en nivel **Normal**. Con las teclas **1, 2 y 3** se cambia a Fácil, Normal o Difícil en cualquier momento (más adelante se va a elegir en el menú). En pantalla:
 
 - **Arriba**, la barra inflada con la carita del dueño avanzando hacia la meta, y debajo cuánto le falta.
 - **En el medio**, la cuenta regresiva y los avisos ("¡Pulpi se lo robó a Blip!").
 - **Alrededor del pan**, el aro de tiempo, que se va prendiendo con el color del dueño.
 - **Una flecha** que apunta al dueño (o al pan, si está suelto): flota arriba de él si se ve, o queda en el borde de la pantalla si no.
 - **Abajo a la derecha**, el minimapa holográfico visto desde arriba: cada kart es un círculo de su color, lleno en el piso, anillo en el techo y las dos cosas (más chico) en una pared. Blip tiene una flechita de rumbo y el pan titila.
-- **Arriba a la izquierda**, el marcador de rondas.
+- **Arriba a la izquierda**, el marcador de rondas y el nivel de la compu.
 - **Abajo a la izquierda**, el botón de gravedad: un aro que se llena mientras se recarga (amarillo si llevás el pan) y da un saltito cuando está listo.
 - **Arriba de cada boca del caño**, un cartel-globito con la F: chiquito cuando andás cerca y grande, saltando, cuando ya podés meterte.
 - **Donde vas a caer** después de usar la gravedad, un aro del color del bichito (también se ve el de los rivales).
@@ -450,7 +452,7 @@ Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian 
 | `AjustesDeSala` | Medidas de la Cocina y radio de los rincones | 40 × 14 × 32, rincones de 3,5 |
 | `AjustesDelKart` | Velocidad, aceleración, frenado, giro, agarre, gravedad, salto, derrape y turbo | Máxima 16, llega en ~1 s, marcha atrás 7, dobla 150° por segundo. La gravedad se recarga en 2,5 s (Espera Gravedad) y en 5 s con el pan (Espera Gravedad Con Comida). El mini turbo se carga con 0,9 s de derrape y lleva a 21,6 durante 0,8 s; con el pan empuja el 30 % (Turbo Con Comida) |
 | `ReglasDePartida` | Tiempo para ganar, rondas, muerte súbita, protección, doble toque, velocidades con y sin el pan, empujones y pausas | 15/20/20 s según jugadores, al mejor de 3, muerte súbita a los 3 min (5 s), protección 1 s, doble toque 0,1 s (y 0,6 s sin poder volver a agarrarlo), dueño ×0,85 y perseguidores ×1,10, cuenta de 3 s |
-| `AjustesDeCompu` | Cómo juega la compu: reacción, giro, anticipación, derrape, gravedad, caño, esconderse y huir | Decide cada 0,25 s, tarda 0,5 a 0,8 s en reaccionar cuando el que mira usa la gravedad (Reaccion A Gravedad), se tira con la gravedad si el objetivo está a menos de 8 de costado en la superficie de enfrente (cuando el botón de su kart está recargado), busca el caño a menos de 10 de una boca y aprieta F al llegar, huye si alguien se acerca a menos de 9 |
+| `AjustesDeCompuFacil`, `AjustesDeCompuNormal` y `AjustesDeCompuDificil` | Cómo juega la compu en cada nivel: reacción, velocidad, giro, anticipación, derrape, gravedad, caño, esconderse y huir | **Difícil** (lo que había antes): decide cada 0,25 s, usa toda su velocidad, se adelanta 0,35 s, tarda 0,5 a 0,8 s en reaccionar a la gravedad del que mira, se tira con la gravedad si el objetivo está a menos de 8 de costado en la superficie de enfrente, busca el caño a menos de 10 de una boca (y aprieta F), huye si alguien se acerca a menos de 9. **Normal:** decide cada 0,45 s, usa el 92 % de su velocidad, se adelanta 0,2 s, reacciona a la gravedad en 0,8 a 1,2 s, gravedad a menos de 6, huye a menos de 7. **Fácil:** decide cada 0,7 s, usa el 82 % de su velocidad, no se adelanta, no derrapa, no usa el caño ni se esconde, reacciona a la gravedad en 1,2 a 1,8 s, gravedad a menos de 4, huye a menos de 5 |
 
 La cámara va a 6,5 detrás del kart y gira con él en las paredes y el techo. Con el mouse da la vuelta entera (Sensibilidad Mouse 0,25). Vuelve sola atrás 1,5 s después de soltar el mouse, pero solo mientras manejás, y el clic de la ruedita la centra. En el objeto **Cámara del kart** se puede tildar **Anti Mareo** para que acompañe más despacio los giros. En el objeto **Tubería azul**, **Radio Boca** (2,6) es la distancia para meterse con F y **Distancia Cartel** (8) desde dónde se ve el cartel.
 
@@ -468,7 +470,7 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 | ¿Se nota cuando te roban? ¿El segundito de protección alcanza? | `ReglasDePartida` → Empuje Robado, Salto Robado, Proteccion Tras Robo |
 | ¿Se entiende el caño (por dónde entrar y salir)? ¿Se ve el cartel a tiempo? ¿Dura bien el viaje? | Objeto **Tubería azul** → Velocidad, Radio Boca, Distancia Cartel |
 | ¿La cámara gira cómoda y vuelve cuando tiene que volver? | Cámara del kart → Sensibilidad Mouse; la espera de 1,5 s está en el eje Horizontal de la órbita (Recentering → Wait) |
-| ¿La compu es muy buena o muy mala? | `AjustesDeCompu` → Reaccion, Anticipacion, Usa Gravedad, Usa Canio |
+| ¿Cada nivel de la compu se siente bien (Fácil, Normal, Difícil)? | `AjustesDeCompuFacil`, `AjustesDeCompuNormal` o `AjustesDeCompuDificil` → Reaccion, Velocidad, Anticipacion, Usa Gravedad, Usa Canio |
 | ¿Se leen la barra, la flecha, el aro y el minimapa? | Contarle a Claude qué no se entiende |
 | ¿La sala es chica o grande para 4? | `AjustesDeSala` → Medidas |
 
@@ -480,7 +482,7 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 - **Botón de gravedad:** solo apoyado y recargado (2,5 s sin el pan, 5 s con el pan; la recarga va según quién lleva el pan en cada momento y se frena adentro del caño). El kart despega hacia la superficie de enfrente, gira como un tonel en el aire y aterriza sin perder velocidad. Mientras vuela, un aro de su color marca dónde va a caer (calculado con la velocidad y la gravedad, se corrige si dobla en el aire).
 - **Sonidos generados por código:** bocina, despegue de la gravedad, salto y mini turbo; "plop" al agarrar el pan y queja al perderlo.
 - **La partida:** un **árbitro** (C# puro, con pruebas automáticas) lleva todas las reglas: cuenta regresiva, agarrar, aguantar, robar con un toque, protección de 1 s, caída por doble toque, más lento con el pan y más rápido sin él, al mejor de 3 y muerte súbita. La escena le cuenta los toques y aplica lo que pasa: el robado sale despedido y los perseguidores rebotan entre ellos. Los toques entre karts se miden como entre cápsulas (la forma alargada del kart).
-- **La compu (Pulpi, Zorbo y Mukko):** busca el pan suelto; persigue al dueño adelantándose a donde va a estar; si el dueño está en la superficie de enfrente, más o menos encima, usa la gravedad; si está cerca de la otra boca del caño, se mete por el caño (aprieta F sobre la boca, como el jugador). Cuando el que mira usa la gravedad, tarda entre 0,5 y 0,8 s en reaccionar, como una persona. Con el pan, se esconde detrás del terrón o del frasco, y si alguien se acerca escapa (con la gravedad o el caño si lo tienen encima). Esquiva los obstáculos, derrapa en las curvas cerradas para el mini turbo y, si se traba, retrocede. Por ahora todos tienen la forma de Blip, con sus colores. El rival simple del hito 4 (`FuentePractica`) quedó en el proyecto sin usar; puede servir para un nivel "Fácil".
+- **La compu (Pulpi, Zorbo y Mukko):** busca el pan suelto; persigue al dueño adelantándose a donde va a estar; si el dueño está en la superficie de enfrente, más o menos encima, usa la gravedad; si está cerca de la otra boca del caño, se mete por el caño (aprieta F sobre la boca, como el jugador). Cuando el que mira usa la gravedad, tarda entre 0,5 y 0,8 s en reaccionar, como una persona. Con el pan, se esconde detrás del terrón o del frasco, y si alguien se acerca escapa (con la gravedad o el caño si lo tienen encima). Esquiva los obstáculos, derrapa en las curvas cerradas para el mini turbo y, si se traba, retrocede. Por ahora todos tienen la forma de Blip, con sus colores. Hay tres niveles (Fácil, Normal y Difícil), cada uno con su archivo de ajustes; la partida se los pasa a todas las compus al empezar y cada vez que se cambia el nivel. El rival simple del hito 4 (`FuentePractica`) quedó en el proyecto sin usar.
 - **La tubería azul:** un caño de metal que une un desagüe del piso (cerca de la heladera, adelante) con una rejilla del techo en la esquina de enfrente. Va por afuera de la sala: baja, pasa por debajo del piso, sube por detrás de la heladera y cruza por arriba del techo. Las dos bocas tienen una lucecita azul y un cartel-globito con la F que aparece cuando el jugador se acerca. Para meterse hay que apretar F a menos de 2,6 de la boca (pasar por encima ya no alcanza); adentro se viaja solo a 24 (unos 3 segundos), la cámara va pegada atrás, doblar hace girar al kart alrededor del caño y se puede robar si otro te alcanza. Se sale por la otra boca, ya pegado a esa superficie (por ejemplo, al techo). Hay succión al entrar y "plop" al salir.
 
 ### Lecciones del hito 1
@@ -516,3 +518,7 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 - Cámara: girada 400° quedó en 40° (da la vuelta entera); quieta no volvió; manejando volvió al centro entre 1,5 y 2,5 s.
 - La vuelta automática de la cámara (de Cinemachine) no sabe si estás manejando: para que no vuelva estando quieto, `CamaraDelKart` le reinicia la espera en cada cuadro en que no se acelera ni se dobla.
 - En las fotos, lo que brilla mucho se ve blanco por el resplandor (bloom): el cartel y la marca usan un brillo bajo (1,2) para que se note su color.
+
+### Lecciones del hito 7 (niveles de la compu)
+
+- Simulación de 45 s por nivel, con Blip manejado por una compu Difícil (como un jugador muy bueno) contra las otras tres. Contra **Fácil** y **Normal**, Blip aguantó 20 s seguidos y ganó la ronda; contra **Difícil**, lo más que aguantó fueron 5 s. Una persona juega peor que esa compu, así que Normal debería quedar en el medio; si se siente muy fácil, se sube su Velocidad o se baja su Reaccion.

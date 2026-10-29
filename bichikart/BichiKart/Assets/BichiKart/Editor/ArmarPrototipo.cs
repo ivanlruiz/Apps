@@ -48,7 +48,12 @@ namespace BichiKart.Editor
             var ajustesSala = AsegurarAjustes<AjustesDeSala>("AjustesDeSala");
             var ajustesKart = AsegurarAjustes<AjustesDelKart>("AjustesDelKart");
             var reglas = AsegurarAjustes<ReglasDePartida>("ReglasDePartida");
-            var compu = AsegurarAjustes<AjustesDeCompu>("AjustesDeCompu");
+            var niveles = new[]
+            {
+                AsegurarAjustes<AjustesDeCompu>("AjustesDeCompuFacil", ComoFacil),
+                AsegurarAjustes<AjustesDeCompu>("AjustesDeCompuNormal", ComoNormal),
+                AsegurarAjustes<AjustesDeCompu>("AjustesDeCompuDificil"),
+            };
 
             foreach (var raiz in escena.GetRootGameObjects()) Object.DestroyImmediate(raiz);
 
@@ -56,9 +61,9 @@ namespace BichiKart.Editor
             var cocina = CrearCocina(ajustesSala, capaSala);
             new GameObject("Tubería azul").AddComponent<Tuberia>().Configurar(cocina);
             var participantes = new List<Participante>();
-            for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, compu, capaKarts, capaSala));
+            for (int i = 0; i < Bichitos.Length; i++) participantes.Add(CrearKart(cocina, i, ajustesKart, niveles[1], capaKarts, capaSala));
             var comida = CrearComida(cocina);
-            var partida = CrearPartida(reglas, cocina, comida, participantes);
+            var partida = CrearPartida(reglas, cocina, comida, participantes, niveles);
             var camara = CrearCamaras(participantes[0].Kart, capaSala);
             CrearInterfaz(partida, camara);
             CrearVolumen();
@@ -132,11 +137,41 @@ namespace BichiKart.Editor
             return go.AddComponent<Comida>();
         }
 
-        private static Partida CrearPartida(ReglasDePartida reglas, Cocina cocina, Comida comida, List<Participante> participantes)
+        private static Partida CrearPartida(ReglasDePartida reglas, Cocina cocina, Comida comida, List<Participante> participantes, AjustesDeCompu[] niveles)
         {
             var partida = new GameObject("Partida").AddComponent<Partida>();
-            partida.Configurar(reglas, cocina, comida, participantes);
+            partida.Configurar(reglas, cocina, comida, participantes, niveles);
             return partida;
+        }
+
+        // Los valores de arranque de cada nivel de la compu. Solo se usan al crear el archivo: después se
+        // ajustan en el Inspector. Difícil usa los valores por defecto de AjustesDeCompu.
+
+        /// <summary>Más lenta para decidir y para manejar, no se adelanta, no derrapa, no usa el caño ni se esconde.</summary>
+        private static void ComoFacil(AjustesDeCompu a)
+        {
+            a.reaccion = 0.7f;
+            a.velocidad = 0.82f;
+            a.anticipacion = 0f;
+            a.anguloGiroCompleto = 45f;
+            a.derrapa = false;
+            a.distanciaParaGravedad = 4f;
+            a.usaCanio = false;
+            a.seEsconde = false;
+            a.distanciaParaHuir = 5f;
+            a.reaccionAGravedad = new Vector2(1.2f, 1.8f);
+        }
+
+        /// <summary>Entre las dos: usa todo, pero más tarde y un poco más lenta que Difícil.</summary>
+        private static void ComoNormal(AjustesDeCompu a)
+        {
+            a.reaccion = 0.45f;
+            a.velocidad = 0.92f;
+            a.anticipacion = 0.2f;
+            a.anguloParaDerrapar = 65f;
+            a.distanciaParaGravedad = 6f;
+            a.distanciaParaHuir = 7f;
+            a.reaccionAGravedad = new Vector2(0.8f, 1.2f);
         }
 
         private static void CrearInterfaz(Partida partida, Camera camara)
@@ -229,7 +264,8 @@ namespace BichiKart.Editor
 
         // ------------------------------------------------------------------ ayudas
 
-        private static T AsegurarAjustes<T>(string nombre) where T : ScriptableObject
+        /// <param name="alCrear">Valores de arranque, si hay que crear el archivo (si ya existe, no se tocan).</param>
+        private static T AsegurarAjustes<T>(string nombre, Action<T> alCrear = null) where T : ScriptableObject
         {
             string ruta = $"{CarpetaAjustes}/{nombre}.asset";
             var ajustes = AssetDatabase.LoadAssetAtPath<T>(ruta);
@@ -237,6 +273,7 @@ namespace BichiKart.Editor
 
             if (!AssetDatabase.IsValidFolder(CarpetaAjustes)) AssetDatabase.CreateFolder("Assets/BichiKart", "Ajustes");
             ajustes = ScriptableObject.CreateInstance<T>();
+            alCrear?.Invoke(ajustes);
             AssetDatabase.CreateAsset(ajustes, ruta);
             AssetDatabase.SaveAssets();
             return ajustes;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace BichiKart
@@ -9,7 +10,8 @@ namespace BichiKart
     /// arriba, la barra con la carita del dueño avanzando hacia la meta; en el medio, la cuenta regresiva y
     /// los avisos; una flecha que apunta al dueño (o a la comida suelta); el minimapa holográfico abajo a la
     /// derecha, visto desde arriba; el botón de gravedad recargándose abajo a la izquierda; y el marcador
-    /// de rondas. Se arma desde código al empezar.
+    /// de rondas con el nivel de la compu. Se arma desde código al empezar. Mientras no haya menú, el
+    /// nivel de la compu se cambia acá con las teclas 1, 2 y 3.
     /// </summary>
     public sealed class Interfaz : MonoBehaviour
     {
@@ -25,6 +27,7 @@ namespace BichiKart
         private static readonly Color BordeHolograma = new Color(0.55f, 0.9f, 1f, 0.9f);
         private static readonly Color ColorDelPan = new Color(1f, 0.82f, 0.25f);
         private static readonly Color ColorGravedad = new Color(0.56f, 0.83f, 1f);
+        private static readonly Key[] TeclasDeNivel = { Key.Digit1, Key.Digit2, Key.Digit3 };
 
         [SerializeField] private Partida partida;
         [SerializeField] private Camera camara;
@@ -93,6 +96,7 @@ namespace BichiKart
             var arbitro = partida.Arbitro;
             if (arbitro == null) return;
 
+            ElegirNivel();
             ActualizarBarra(arbitro);
             ActualizarFlecha(arbitro);
             ActualizarMinimapa(arbitro);
@@ -337,9 +341,23 @@ namespace BichiKart
 
         // ------------------------------------------------------------------ marcador y avisos
 
+        /// <summary>Por ahora el nivel de la compu se elige con 1, 2 y 3 (más adelante, en el menú).</summary>
+        private void ElegirNivel()
+        {
+            var teclado = Keyboard.current;
+            if (teclado == null) return;
+            for (int i = 0; i < TeclasDeNivel.Length && i < partida.CantidadDeNiveles; i++)
+            {
+                if (!teclado[TeclasDeNivel[i]].wasPressedThisFrame) continue;
+                partida.CambiarNivel(i);
+                Mostrar($"Compu: {partida.NombreDelNivel}");
+            }
+        }
+
         private void ActualizarMarcador(Arbitro arbitro)
         {
             var marcador = new System.Text.StringBuilder($"Ronda {arbitro.Ronda}\n");
+            marcador.Append($"<size=22>Compu: {partida.NombreDelNivel} (1, 2, 3)</size>\n");
             for (int i = 0; i < partida.Participantes.Count; i++)
             {
                 var p = partida.Participantes[i];

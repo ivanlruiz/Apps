@@ -17,6 +17,13 @@ namespace BichiKart
         [SerializeField] private Comida comida;
         [SerializeField] private List<Participante> participantes = new List<Participante>();
 
+        [Header("Compu")]
+        [Tooltip("Ajustes de la compu para cada nivel, del más fácil al más difícil.")]
+        [SerializeField] private AjustesDeCompu[] niveles = new AjustesDeCompu[0];
+
+        [Tooltip("Con qué nivel arranca (0 = el primero).")]
+        [SerializeField] private int nivel = 1;
+
         [Header("Toques")]
         [Tooltip("Cada kart se mide como una cápsula: una línea a lo largo del kart con este grosor alrededor.")]
         [SerializeField] private float radioKart = 0.85f;
@@ -39,13 +46,36 @@ namespace BichiKart
         /// <summary>Pasó algo en la partida (para la interfaz y los sonidos).</summary>
         public event Action<EventoDePartida> AlOcurrir;
 
+        /// <summary>Nombres de los niveles de la compu, en el mismo orden que sus ajustes.</summary>
+        public static readonly string[] NombresDeNivel = { "Fácil", "Normal", "Difícil" };
+
+        /// <summary>Nivel de la compu que se está usando (0 = el más fácil).</summary>
+        public int Nivel => nivel;
+
+        public int CantidadDeNiveles => niveles.Length;
+
+        public string NombreDelNivel => nivel >= 0 && nivel < NombresDeNivel.Length ? NombresDeNivel[nivel] : $"Nivel {nivel + 1}";
+
         /// <summary>Lo usa la herramienta que arma la escena.</summary>
-        public void Configurar(ReglasDePartida nuevasReglas, Cocina nuevaCocina, Comida nuevaComida, List<Participante> nuevosParticipantes)
+        public void Configurar(ReglasDePartida nuevasReglas, Cocina nuevaCocina, Comida nuevaComida, List<Participante> nuevosParticipantes, AjustesDeCompu[] nuevosNiveles)
         {
             reglas = nuevasReglas;
             cocina = nuevaCocina;
             comida = nuevaComida;
             participantes = nuevosParticipantes;
+            niveles = nuevosNiveles;
+        }
+
+        /// <summary>Cambia cómo juegan todas las compus (se puede hacer en cualquier momento).</summary>
+        public void CambiarNivel(int nuevoNivel)
+        {
+            if (niveles.Length == 0) return;
+            nivel = Mathf.Clamp(nuevoNivel, 0, niveles.Length - 1);
+            foreach (var participante in participantes)
+            {
+                var compu = participante.GetComponent<FuenteCompu>();
+                if (compu != null) compu.Configurar(niveles[nivel]);
+            }
         }
 
         private void Start()
@@ -59,6 +89,7 @@ namespace BichiKart
                 _sonidos[i] = participantes[i].GetComponent<SonidosDelKart>();
             }
             Arbitro = new Arbitro(reglas, n);
+            CambiarNivel(nivel);
             UbicarTodo();
             ActualizarKarts();
         }

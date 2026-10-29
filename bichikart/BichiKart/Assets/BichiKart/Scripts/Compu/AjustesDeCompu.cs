@@ -3,8 +3,8 @@ using UnityEngine;
 namespace BichiKart
 {
     /// <summary>
-    /// Cómo juega la compu. Por ahora hay una sola dificultad; más adelante cada nivel (Fácil, Normal,
-    /// Difícil) va a ser un archivo de estos con otros números.
+    /// Cómo juega la compu. Cada nivel (Fácil, Normal y Difícil) es un archivo de estos con otros números;
+    /// los valores de acá son los de Difícil.
     /// </summary>
     [CreateAssetMenu(menuName = "BichiKart/Ajustes de la compu", fileName = "AjustesDeCompu")]
     public sealed class AjustesDeCompu : ScriptableObject
@@ -12,6 +12,9 @@ namespace BichiKart
         [Header("Manejo")]
         [Tooltip("Segundos entre una decisión y la siguiente. Más es más lenta para reaccionar.")]
         public float reaccion = 0.25f;
+
+        [Tooltip("Qué parte de su velocidad máxima usa (1 = toda).")]
+        [Range(0.5f, 1f)] public float velocidad = 1f;
 
         [Tooltip("Ángulo hacia el objetivo con el que ya dobla a fondo.")]
         public float anguloGiroCompleto = 35f;

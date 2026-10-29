@@ -255,7 +255,7 @@ namespace BichiKart
                 if (!derrapar) _derrape = 0f;
             }
 
-            return new OrdenesDelKart { Avance = avance, Giro = giro, Derrapar = derrapar };
+            return new OrdenesDelKart { Avance = avance * ajustes.velocidad, Giro = giro, Derrapar = derrapar };
         }
 
         /// <summary>Si tiene el terrón o el frasco adelante, dobla para el lado que lo aleja.</summary>
