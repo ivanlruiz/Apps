@@ -371,7 +371,8 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
      - **Cámara 360°**: más sensible (0,25° por punto en vez de 0,12°); vuelve sola a los 1,5 s solo mientras manejás; clic de la ruedita (o stick derecho apretado) para centrarla.
      - **Extras:** el que lleva el pan recibe el 30 % del mini turbo, y la compu tarda **0,5 a 0,8 s** en reaccionar cuando el kart que mira usa la gravedad.
      - "Caño o choques" era solo por la entrada automática al caño (ya resuelto con la F).
-     - **Segunda vuelta:** el usuario jugó la primera vuelta: "es bastante complicado, los bots son difíciles, pero está bueno". Le costaba tanto aguantar el pan como alcanzar al bot que lo tenía. Eligió **niveles de la compu** (Fácil, Normal y Difícil): lo que había quedó como Difícil, la partida arranca en Normal, y por ahora se cambia con las teclas 1, 2 y 3. Cada nivel es un archivo de ajustes; se sumó **Velocidad** (qué parte de su velocidad máxima usa la compu).
+     - **Segunda vuelta:** el usuario jugó la primera vuelta: "es bastante complicado, los bots son difíciles, pero está bueno". Le costaba tanto aguantar el pan como alcanzar al bot que lo tenía. Eligió **niveles de la compu** (Fácil, Normal y Difícil): lo que había quedó como Difícil y la partida arranca en Normal. Cada nivel es un archivo de ajustes; se sumó **Velocidad** (qué parte de su velocidad máxima usa la compu).
+     - **El menú** (pedido del usuario): la casa 3D con formas simples flotando en el espacio, como el concepto, con un cartel por cuarto. Solo anda **Partida rápida**, donde se elige el nivel de la compu "y nada más, si no no sería partida rápida"; los otros cuartos dicen "¡Próximamente!". **Opciones** con cámara, sonido y pantalla, guardadas en la PC. **Pausa** con Escape (Seguir, Opciones, Volver al menú). Las teclas 1, 2 y 3 ya no cambian el nivel.
    - **Decisiones:**
      - La sala tiene **medidas ajustables**, y arranca con un tamaño para 4 karts (el diseño dice que la versión chica es para 2).
      - Además de las reglas básicas, entran el **rebote entre perseguidores**, la **caída por doble toque**, el **mejor de 3 rondas** y la **muerte súbita**.
@@ -384,7 +385,7 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ~~**Lo primero:** comprobar que el proyecto base abre bien en Unity~~ (hecho: abre, compila y la sala se ve bien en Play).
 
-**Ahora:** hito 7 de la etapa 2, el ajuste final (los hitos 0 a 6 están hechos). Ya están la primera vuelta de ajustes (gravedad con espera, caño con F, cámara 360°) y los niveles de la compu; falta que el usuario pruebe Fácil, Normal y Difícil y cuente si cada uno se siente bien.
+**Ahora:** hito 7 de la etapa 2, el ajuste final (los hitos 0 a 6 están hechos). Ya están la primera vuelta de ajustes (gravedad con espera, caño con F, cámara 360°), los niveles de la compu, el menú principal y la pausa; falta que el usuario pruebe Fácil, Normal y Difícil y cuente si cada uno se siente bien.
 
 ## 7. Pendientes del diseño
 
@@ -410,8 +411,8 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 
 ### Cómo probarlo
 
-1. En Unity, abrir la escena `Assets/Scenes/Prototipo` y apretar **Play**.
-2. Hacer **clic** en la ventana del juego para que el mouse mueva la cámara. **Escape** suelta el mouse.
+1. En Unity, abrir la escena `Assets/Scenes/Menu` y apretar **Play**. En el menú, el cartel **Partida rápida** lleva al living, donde se elige el nivel de la compu. (También se puede abrir `Assets/Scenes/Prototipo` y apretar Play para ir directo a la partida, en Normal.)
+2. Hacer **clic** en la ventana del juego para que el mouse mueva la cámara. **Escape** pone pausa (y suelta el mouse): Seguir, Opciones o Volver al menú.
 3. Controles:
 
 | Tecla | Acción | Joystick |
@@ -425,11 +426,11 @@ Elementos vivos: agua y gotas, cosas que empujan y gravedad rara (solo en la Nav
 | Q | Bocina | LB |
 | Mouse | Girar la cámara (vuelta entera) | Stick derecho |
 | Clic de la ruedita | Centrar la cámara | Stick derecho apretado |
-| 1 / 2 / 3 | Compu en Fácil / Normal / Difícil | — |
+| Escape | Pausa | Start |
 
 Para pasar a las paredes y al techo, alcanza con manejar hacia un rincón: las ruedas son magnéticas.
 
-La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de la compu (Pulpi, Zorbo y Mukko) en nivel **Normal**. Con las teclas **1, 2 y 3** se cambia a Fácil, Normal o Difícil en cualquier momento (más adelante se va a elegir en el menú). En pantalla:
+La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 rivales de la compu (Pulpi, Zorbo y Mukko) en el nivel elegido en el menú (Normal si se entró directo). En pantalla:
 
 - **Arriba**, la barra inflada con la carita del dueño avanzando hacia la meta, y debajo cuánto le falta.
 - **En el medio**, la cuenta regresiva y los avisos ("¡Pulpi se lo robó a Blip!").
@@ -441,7 +442,7 @@ La partida arranca sola: cuenta regresiva, la rebanada de pan en el medio y 3 ri
 - **Arriba de cada boca del caño**, un cartel-globito con la F: chiquito cuando andás cerca y grande, saltando, cuando ya podés meterte.
 - **Donde vas a caer** después de usar la gravedad, un aro del color del bichito (también se ve el de los rivales).
 
-Si algo de la escena se rompe, el menú **BichiKart → Armar escena Prototipo** la vuelve a armar de cero.
+Si algo de una escena se rompe, los menús **BichiKart → Armar escena Prototipo** y **BichiKart → Armar escena Menú** la vuelven a armar de cero. Armar el menú también deja Menu y Prototipo como las escenas del juego compilado (arranca en Menu).
 
 ### Valores elegidos (se pueden cambiar mientras se juega)
 
@@ -454,7 +455,7 @@ Están en `Assets/BichiKart/Ajustes`: se elige el archivo en Unity y se cambian 
 | `ReglasDePartida` | Tiempo para ganar, rondas, muerte súbita, protección, doble toque, velocidades con y sin el pan, empujones y pausas | 15/20/20 s según jugadores, al mejor de 3, muerte súbita a los 3 min (5 s), protección 1 s, doble toque 0,1 s (y 0,6 s sin poder volver a agarrarlo), dueño ×0,85 y perseguidores ×1,10, cuenta de 3 s |
 | `AjustesDeCompuFacil`, `AjustesDeCompuNormal` y `AjustesDeCompuDificil` | Cómo juega la compu en cada nivel: reacción, velocidad, giro, anticipación, derrape, gravedad, caño, esconderse y huir | **Difícil** (lo que había antes): decide cada 0,25 s, usa toda su velocidad, se adelanta 0,35 s, tarda 0,5 a 0,8 s en reaccionar a la gravedad del que mira, se tira con la gravedad si el objetivo está a menos de 8 de costado en la superficie de enfrente, busca el caño a menos de 10 de una boca (y aprieta F), huye si alguien se acerca a menos de 9. **Normal:** decide cada 0,45 s, usa el 92 % de su velocidad, se adelanta 0,2 s, reacciona a la gravedad en 0,8 a 1,2 s, gravedad a menos de 6, huye a menos de 7. **Fácil:** decide cada 0,7 s, usa el 82 % de su velocidad, no se adelanta, no derrapa, no usa el caño ni se esconde, reacciona a la gravedad en 1,2 a 1,8 s, gravedad a menos de 4, huye a menos de 5 |
 
-La cámara va a 6,5 detrás del kart y gira con él en las paredes y el techo. Con el mouse da la vuelta entera (Sensibilidad Mouse 0,25). Vuelve sola atrás 1,5 s después de soltar el mouse, pero solo mientras manejás, y el clic de la ruedita la centra. En el objeto **Cámara del kart** se puede tildar **Anti Mareo** para que acompañe más despacio los giros. En el objeto **Tubería azul**, **Radio Boca** (2,6) es la distancia para meterse con F y **Distancia Cartel** (8) desde dónde se ve el cartel.
+La cámara va a 6,5 detrás del kart y gira con él en las paredes y el techo. Con el mouse da la vuelta entera. Vuelve sola atrás 1,5 s después de soltar el mouse, pero solo mientras manejás, y el clic de la ruedita la centra. La sensibilidad del mouse (5 = 0,25° por punto), invertir vertical y el anti-mareo están en **Opciones** (en el menú o en la pausa) y se guardan en la PC. En el objeto **Tubería azul**, **Radio Boca** (2,6) es la distancia para meterse con F y **Distancia Cartel** (8) desde dónde se ve el cartel.
 
 ### Qué probar para el ajuste final (hito 7)
 
@@ -464,12 +465,13 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 |---|---|
 | ¿La velocidad (16) es buena para esta sala, o muy rápida o lenta? | `AjustesDelKart` → Velocidad Maxima, Aceleracion |
 | ¿Doblar y derrapar se siente bien? ¿El mini turbo se nota? | `AjustesDelKart` → Giro, Giro Derrape, Carga Mini Turbo, Velocidad Turbo |
-| ¿Subir por las paredes y andar por el techo marea? | Cámara del kart → Anti Mareo |
+| ¿Subir por las paredes y andar por el techo marea? | Opciones → Anti-mareo |
 | ¿Sirve el botón de gravedad? ¿Se puede abusar? ¿Con el pan ahora te alcanzan? | `AjustesDelKart` → Impulso Gravedad, Espera Gravedad, Espera Gravedad Con Comida |
 | ¿20 s con el pan contra 3 compus es posible? | `ReglasDePartida` → Tiempo Cuatro Jugadores, Velocidad Duenio, Velocidad Perseguidores |
 | ¿Se nota cuando te roban? ¿El segundito de protección alcanza? | `ReglasDePartida` → Empuje Robado, Salto Robado, Proteccion Tras Robo |
 | ¿Se entiende el caño (por dónde entrar y salir)? ¿Se ve el cartel a tiempo? ¿Dura bien el viaje? | Objeto **Tubería azul** → Velocidad, Radio Boca, Distancia Cartel |
-| ¿La cámara gira cómoda y vuelve cuando tiene que volver? | Cámara del kart → Sensibilidad Mouse; la espera de 1,5 s está en el eje Horizontal de la órbita (Recentering → Wait) |
+| ¿La cámara gira cómoda y vuelve cuando tiene que volver? | Opciones → Sensibilidad del mouse; la espera de 1,5 s está en el objeto **Cámara del kart**, eje Horizontal de la órbita (Recentering → Wait) |
+| ¿El menú se entiende? ¿Los carteles se leen y el viaje al living se siente bien? | Contarle a Claude |
 | ¿Cada nivel de la compu se siente bien (Fácil, Normal, Difícil)? | `AjustesDeCompuFacil`, `AjustesDeCompuNormal` o `AjustesDeCompuDificil` → Reaccion, Velocidad, Anticipacion, Usa Gravedad, Usa Canio |
 | ¿Se leen la barra, la flecha, el aro y el minimapa? | Contarle a Claude qué no se entiende |
 | ¿La sala es chica o grande para 4? | `AjustesDeSala` → Medidas |
@@ -518,6 +520,15 @@ Cada punto dice qué valor tocar si algo no se siente bien. Todos están en `Ass
 - Cámara: girada 400° quedó en 40° (da la vuelta entera); quieta no volvió; manejando volvió al centro entre 1,5 y 2,5 s.
 - La vuelta automática de la cámara (de Cinemachine) no sabe si estás manejando: para que no vuelva estando quieto, `CamaraDelKart` le reinicia la espera en cada cuadro en que no se acelera ni se dobla.
 - En las fotos, lo que brilla mucho se ve blanco por el resplandor (bloom): el cartel y la marca usan un brillo bajo (1,2) para que se note su color.
+
+### El menú y la pausa
+
+- **Escena `Menu`:** la casa (`CasaDelMenu`) con la cocina (Historia), el living (Partida rápida), el garaje con el kart de Blip (Garaje), el cuarto de los trofeos (Copas) y la antena (Online), sobre una base flotante, con nubes, islitas, planetas y estrellas. El menú (`MenuPrincipal`) hamaca la cámara frente a la casa y pone los carteles de madera, que siguen a cada cuarto con una flecha. Abajo a la derecha, Opciones y Salir.
+- **Partida rápida:** la cámara viaja hasta el living y aparece el panel con Fácil ("Lentos y distraídos"), Normal ("Te dan pelea") y Difícil ("No perdonan"). El último nivel elegido queda marcado la próxima vez.
+- **Opciones** (`PanelDeOpciones`, igual en el menú y en la pausa): cada opción se cambia con flechas y se guarda enseguida en la PC (`Opciones`, con PlayerPrefs). La pantalla completa y la resolución solo cambian en el juego compilado, no en el editor.
+- **Pausa** (`Pausa`): frena el tiempo y el sonido, suelta el mouse, y la cámara y el teclado del kart no hacen caso hasta seguir.
+- Todo se maneja con mouse, teclado o joystick (los botones se agrandan al pasar por encima o al elegirlos). Las pantallas se arman con `Piezas`, que ahora usa también la interfaz de la partida.
+- **Cómo se probó:** en Play, con un recorrido automático: el menú, Partida rápida, Fácil (la partida arrancó en Fácil), pausa (el juego quedó quieto), Opciones (las flechas cambian y guardan), Seguir (vuelve el tiempo y se atrapa el mouse) y Volver al menú (vuelve con el tiempo y el sonido normales). La tecla Escape no se pudo simular desde la prueba: la pausa se abrió llamándola directo.
 
 ### Lecciones del hito 7 (niveles de la compu)
 

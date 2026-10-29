@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace BichiKart
@@ -10,8 +9,7 @@ namespace BichiKart
     /// arriba, la barra con la carita del dueño avanzando hacia la meta; en el medio, la cuenta regresiva y
     /// los avisos; una flecha que apunta al dueño (o a la comida suelta); el minimapa holográfico abajo a la
     /// derecha, visto desde arriba; el botón de gravedad recargándose abajo a la izquierda; y el marcador
-    /// de rondas con el nivel de la compu. Se arma desde código al empezar. Mientras no haya menú, el
-    /// nivel de la compu se cambia acá con las teclas 1, 2 y 3.
+    /// de rondas con el nivel de la compu. Se arma desde código al empezar, con las <see cref="Piezas"/>.
     /// </summary>
     public sealed class Interfaz : MonoBehaviour
     {
@@ -27,7 +25,6 @@ namespace BichiKart
         private static readonly Color BordeHolograma = new Color(0.55f, 0.9f, 1f, 0.9f);
         private static readonly Color ColorDelPan = new Color(1f, 0.82f, 0.25f);
         private static readonly Color ColorGravedad = new Color(0.56f, 0.83f, 1f);
-        private static readonly Key[] TeclasDeNivel = { Key.Digit1, Key.Digit2, Key.Digit3 };
 
         [SerializeField] private Partida partida;
         [SerializeField] private Camera camara;
@@ -35,7 +32,6 @@ namespace BichiKart
         [Tooltip("Número del jugador que mira esta pantalla (a él no se le muestra la flecha).")]
         [SerializeField] private int jugador;
 
-        private Font _letra;
         private RectTransform _lienzo;
         private Text _aviso, _aguante, _marcador;
         private float _avisoHasta;
@@ -74,14 +70,13 @@ namespace BichiKart
 
         private void Start()
         {
-            _letra = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             ArmarLienzo();
             ArmarBarra();
             ArmarFlecha();
             ArmarMinimapa();
             ArmarGravedad();
-            _aviso = Texto("Aviso", transform, 72, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.62f), new Vector2(1400f, 300f), Vector2.zero);
-            _marcador = Texto("Marcador", transform, 30, TextAnchor.UpperLeft, new Vector2(0f, 1f), new Vector2(380f, 260f), new Vector2(40f, -30f));
+            _aviso = Piezas.Texto("Aviso", transform, 72, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.62f), new Vector2(1400f, 300f), Vector2.zero);
+            _marcador = Piezas.Texto("Marcador", transform, 30, TextAnchor.UpperLeft, new Vector2(0f, 1f), new Vector2(380f, 260f), new Vector2(40f, -30f));
             _marcador.rectTransform.pivot = new Vector2(0f, 1f);
             partida.AlOcurrir += Avisar;
         }
@@ -96,7 +91,6 @@ namespace BichiKart
             var arbitro = partida.Arbitro;
             if (arbitro == null) return;
 
-            ElegirNivel();
             ActualizarBarra(arbitro);
             ActualizarFlecha(arbitro);
             ActualizarMinimapa(arbitro);
@@ -112,23 +106,23 @@ namespace BichiKart
 
         private void ArmarBarra()
         {
-            var fondo = Imagen("Barra", transform, Dibujos.Redondeado, Panel, new Vector2(0.5f, 1f), new Vector2(AnchoBarra + 20f, 52f), new Vector2(0f, -30f));
+            var fondo = Piezas.Imagen("Barra", transform, Dibujos.Redondeado, Panel, new Vector2(0.5f, 1f), new Vector2(AnchoBarra + 20f, 52f), new Vector2(0f, -30f));
             fondo.pivot = new Vector2(0.5f, 1f);
-            Borde(fondo, Color.white, 3f);
+            Piezas.Borde(fondo, Color.white, 3f);
 
-            _relleno = Imagen("Relleno", fondo, Dibujos.Redondeado, Color.white, new Vector2(0f, 0.5f), new Vector2(36f, 36f), new Vector2(10f, 0f));
+            _relleno = Piezas.Imagen("Relleno", fondo, Dibujos.Redondeado, Color.white, new Vector2(0f, 0.5f), new Vector2(36f, 36f), new Vector2(10f, 0f));
             _relleno.pivot = new Vector2(0f, 0.5f);
             _rellenoColor = _relleno.GetComponent<Image>();
 
-            var meta = Imagen("Meta", fondo, Dibujos.Circulo, ColorDelPan, new Vector2(1f, 0.5f), new Vector2(34f, 34f), new Vector2(-28f, 0f));
-            Borde(meta, Color.white, 2f);
+            var meta = Piezas.Imagen("Meta", fondo, Dibujos.Circulo, ColorDelPan, new Vector2(1f, 0.5f), new Vector2(34f, 34f), new Vector2(-28f, 0f));
+            Piezas.Borde(meta, Color.white, 2f);
 
-            _carita = Imagen("Carita", fondo, Dibujos.Circulo, Color.white, new Vector2(0f, 0.5f), new Vector2(66f, 66f), new Vector2(10f, 0f));
+            _carita = Piezas.Imagen("Carita", fondo, Dibujos.Circulo, Color.white, new Vector2(0f, 0.5f), new Vector2(66f, 66f), new Vector2(10f, 0f));
             _caritaColor = _carita.GetComponent<Image>();
-            Borde(_carita, Color.white, 4f);
-            _caritaLetra = Texto("Letra", _carita, 34, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(66f, 66f), Vector2.zero);
+            Piezas.Borde(_carita, Color.white, 4f);
+            _caritaLetra = Piezas.Texto("Letra", _carita, 34, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(66f, 66f), Vector2.zero);
 
-            _aguante = Texto("Aguante", transform, 30, TextAnchor.UpperCenter, new Vector2(0.5f, 1f), new Vector2(1000f, 50f), new Vector2(0f, -96f));
+            _aguante = Piezas.Texto("Aguante", transform, 30, TextAnchor.UpperCenter, new Vector2(0.5f, 1f), new Vector2(1000f, 50f), new Vector2(0f, -96f));
             _aguante.rectTransform.pivot = new Vector2(0.5f, 1f);
         }
 
@@ -159,8 +153,8 @@ namespace BichiKart
 
         private void ArmarFlecha()
         {
-            _flecha = Imagen("Flecha", transform, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(80f, 80f), Vector2.zero);
-            _flechaColor = Imagen("Color", _flecha, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(56f, 56f), new Vector2(0f, -4f)).GetComponent<Image>();
+            _flecha = Piezas.Imagen("Flecha", transform, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(80f, 80f), Vector2.zero);
+            _flechaColor = Piezas.Imagen("Color", _flecha, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(56f, 56f), new Vector2(0f, -4f)).GetComponent<Image>();
         }
 
         /// <summary>
@@ -223,14 +217,14 @@ namespace BichiKart
             var sala = partida.Cocina.Medidas;
             const float ancho = 320f;
             var medidas = new Vector2(ancho, ancho * sala.z / sala.x);
-            var fondo = Imagen("Minimapa", transform, Dibujos.Redondeado, Holograma, new Vector2(1f, 0f), medidas + Vector2.one * 28f, new Vector2(-30f, 30f));
+            var fondo = Piezas.Imagen("Minimapa", transform, Dibujos.Redondeado, Holograma, new Vector2(1f, 0f), medidas + Vector2.one * 28f, new Vector2(-30f, 30f));
             fondo.pivot = new Vector2(1f, 0f);
-            Borde(fondo, BordeHolograma, 2f);
+            Piezas.Borde(fondo, BordeHolograma, 2f);
 
-            _mapa = Imagen("Sala", fondo, Dibujos.Redondeado, new Color(1f, 1f, 1f, 0.08f), new Vector2(0.5f, 0.5f), medidas, Vector2.zero);
+            _mapa = Piezas.Imagen("Sala", fondo, Dibujos.Redondeado, new Color(1f, 1f, 1f, 0.08f), new Vector2(0.5f, 0.5f), medidas, Vector2.zero);
             _medidasMapa = medidas;
 
-            _iconoPan = Imagen("Pan", _mapa, Dibujos.Circulo, ColorDelPan, new Vector2(0.5f, 0.5f), new Vector2(18f, 18f), Vector2.zero);
+            _iconoPan = Piezas.Imagen("Pan", _mapa, Dibujos.Circulo, ColorDelPan, new Vector2(0.5f, 0.5f), new Vector2(18f, 18f), Vector2.zero);
             _iconoPanColor = _iconoPan.GetComponent<Image>();
 
             _iconos.Clear();
@@ -239,13 +233,13 @@ namespace BichiKart
                 var participante = partida.Participantes[i];
                 bool esJugador = i == jugador;
                 float tamano = esJugador ? 30f : 24f;
-                var lugar = Imagen(participante.Nombre, _mapa, null, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(tamano, tamano), Vector2.zero);
-                var relleno = Imagen("Relleno", lugar, Dibujos.Circulo, participante.Color, new Vector2(0.5f, 0.5f), new Vector2(tamano, tamano), Vector2.zero);
-                var anillo = Imagen("Anillo", lugar, Dibujos.Anillo, participante.Color, new Vector2(0.5f, 0.5f), new Vector2(tamano + 8f, tamano + 8f), Vector2.zero);
+                var lugar = Piezas.Imagen(participante.Nombre, _mapa, null, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(tamano, tamano), Vector2.zero);
+                var relleno = Piezas.Imagen("Relleno", lugar, Dibujos.Circulo, participante.Color, new Vector2(0.5f, 0.5f), new Vector2(tamano, tamano), Vector2.zero);
+                var anillo = Piezas.Imagen("Anillo", lugar, Dibujos.Anillo, participante.Color, new Vector2(0.5f, 0.5f), new Vector2(tamano + 8f, tamano + 8f), Vector2.zero);
                 if (esJugador)
                 {
-                    Borde(relleno, Color.white, 2f);
-                    _rumbo = Imagen("Rumbo", lugar, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(16f, 16f), Vector2.zero);
+                    Piezas.Borde(relleno, Color.white, 2f);
+                    _rumbo = Piezas.Imagen("Rumbo", lugar, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(16f, 16f), Vector2.zero);
                 }
                 _iconos.Add(new IconoDelMapa { Lugar = lugar, Relleno = relleno.GetComponent<Image>(), Anillo = anillo.GetComponent<Image>() });
             }
@@ -298,11 +292,11 @@ namespace BichiKart
         /// <summary>Abajo a la izquierda: un aro que se llena mientras se recarga la gravedad y late cuando está lista.</summary>
         private void ArmarGravedad()
         {
-            _gravedad = Imagen("Gravedad", transform, Dibujos.Circulo, Panel, new Vector2(0f, 0f), new Vector2(118f, 118f), new Vector2(100f, 110f));
+            _gravedad = Piezas.Imagen("Gravedad", transform, Dibujos.Circulo, Panel, new Vector2(0f, 0f), new Vector2(118f, 118f), new Vector2(100f, 110f));
             _gravedadFondo = _gravedad.GetComponent<Image>();
-            Borde(_gravedad, Color.white, 3f);
+            Piezas.Borde(_gravedad, Color.white, 3f);
 
-            var carga = Imagen("Carga", _gravedad, Dibujos.Anillo, ColorGravedad, new Vector2(0.5f, 0.5f), new Vector2(104f, 104f), Vector2.zero);
+            var carga = Piezas.Imagen("Carga", _gravedad, Dibujos.Anillo, ColorGravedad, new Vector2(0.5f, 0.5f), new Vector2(104f, 104f), Vector2.zero);
             _gravedadCarga = carga.GetComponent<Image>();
             _gravedadCarga.type = Image.Type.Filled;
             _gravedadCarga.fillMethod = Image.FillMethod.Radial360;
@@ -310,12 +304,12 @@ namespace BichiKart
             _gravedadCarga.fillClockwise = true;
 
             // Dos flechas, una para arriba y otra para abajo: "dar vuelta la gravedad".
-            var icono = Imagen("Ícono", _gravedad, null, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(60f, 60f), Vector2.zero);
+            var icono = Piezas.Imagen("Ícono", _gravedad, null, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(60f, 60f), Vector2.zero);
             _gravedadIcono = icono.gameObject.AddComponent<CanvasGroup>();
-            Imagen("Arriba", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(-11f, 9f));
-            Imagen("Abajo", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(11f, -9f)).localRotation = Quaternion.Euler(0f, 0f, 180f);
+            Piezas.Imagen("Arriba", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(-11f, 9f));
+            Piezas.Imagen("Abajo", icono, Dibujos.Flecha, Color.white, new Vector2(0.5f, 0.5f), new Vector2(30f, 26f), new Vector2(11f, -9f)).localRotation = Quaternion.Euler(0f, 0f, 180f);
 
-            var tecla = Texto("Tecla", _gravedad, 24, TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(120f, 30f), new Vector2(0f, -20f));
+            var tecla = Piezas.Texto("Tecla", _gravedad, 24, TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(120f, 30f), new Vector2(0f, -20f));
             tecla.text = "Ctrl";
         }
 
@@ -341,23 +335,10 @@ namespace BichiKart
 
         // ------------------------------------------------------------------ marcador y avisos
 
-        /// <summary>Por ahora el nivel de la compu se elige con 1, 2 y 3 (más adelante, en el menú).</summary>
-        private void ElegirNivel()
-        {
-            var teclado = Keyboard.current;
-            if (teclado == null) return;
-            for (int i = 0; i < TeclasDeNivel.Length && i < partida.CantidadDeNiveles; i++)
-            {
-                if (!teclado[TeclasDeNivel[i]].wasPressedThisFrame) continue;
-                partida.CambiarNivel(i);
-                Mostrar($"Compu: {partida.NombreDelNivel}");
-            }
-        }
-
         private void ActualizarMarcador(Arbitro arbitro)
         {
             var marcador = new System.Text.StringBuilder($"Ronda {arbitro.Ronda}\n");
-            marcador.Append($"<size=22>Compu: {partida.NombreDelNivel} (1, 2, 3)</size>\n");
+            marcador.Append($"<size=22>Compu: {partida.NombreDelNivel}</size>\n");
             for (int i = 0; i < partida.Participantes.Count; i++)
             {
                 var p = partida.Participantes[i];
@@ -406,47 +387,5 @@ namespace BichiKart
             _lienzo = (RectTransform)transform;
         }
 
-        private RectTransform Imagen(string nombre, Transform padre, Sprite dibujo, Color color, Vector2 ancla, Vector2 medidas, Vector2 lugar)
-        {
-            var go = new GameObject(nombre, typeof(RectTransform));
-            go.transform.SetParent(padre, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = rect.anchorMax = ancla;
-            rect.sizeDelta = medidas;
-            rect.anchoredPosition = lugar;
-            if (dibujo == null) return rect;
-
-            var imagen = go.AddComponent<Image>();
-            imagen.sprite = dibujo;
-            imagen.color = color;
-            imagen.type = dibujo == Dibujos.Redondeado ? Image.Type.Sliced : Image.Type.Simple;
-            imagen.raycastTarget = false;
-            return rect;
-        }
-
-        private static void Borde(RectTransform rect, Color color, float grosor)
-        {
-            var borde = rect.gameObject.AddComponent<Outline>();
-            borde.effectColor = color;
-            borde.effectDistance = new Vector2(grosor, -grosor);
-        }
-
-        private Text Texto(string nombre, Transform padre, int tamano, TextAnchor alineacion, Vector2 ancla, Vector2 medidas, Vector2 lugar)
-        {
-            var rect = Imagen(nombre, padre, null, Color.clear, ancla, medidas, lugar);
-            var texto = rect.gameObject.AddComponent<Text>();
-            texto.font = _letra;
-            texto.fontSize = tamano;
-            texto.fontStyle = FontStyle.Bold;
-            texto.alignment = alineacion;
-            texto.color = Color.white;
-            texto.horizontalOverflow = HorizontalWrapMode.Overflow;
-            texto.verticalOverflow = VerticalWrapMode.Overflow;
-            texto.raycastTarget = false;
-            var borde = rect.gameObject.AddComponent<Outline>();
-            borde.effectColor = new Color(0.11f, 0.14f, 0.25f, 0.9f);
-            borde.effectDistance = new Vector2(3f, -3f);
-            return texto;
-        }
     }
 }

@@ -89,7 +89,8 @@ namespace BichiKart
                 _sonidos[i] = participantes[i].GetComponent<SonidosDelKart>();
             }
             Arbitro = new Arbitro(reglas, n);
-            CambiarNivel(nivel);
+            // El nivel elegido en el menú; si se entró directo a esta escena, el que tiene la escena.
+            CambiarNivel(EleccionDePartida.Nivel >= 0 ? EleccionDePartida.Nivel : nivel);
             UbicarTodo();
             ActualizarKarts();
         }

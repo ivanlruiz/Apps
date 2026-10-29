@@ -50,7 +50,8 @@ namespace BichiKart
         private void Update()
         {
             // Los botones se anotan acá y se entregan en el próximo paso de física, que puede no
-            // ocurrir en este cuadro o ocurrir varias veces.
+            // ocurrir en este cuadro o ocurrir varias veces. En pausa no se anotan.
+            if (Pausa.Activa) return;
             _saltarApretado |= _saltar.WasPressedThisFrame();
             _gravedadApretada |= _gravedad.WasPressedThisFrame();
             _bocinaApretada |= _bocina.WasPressedThisFrame();

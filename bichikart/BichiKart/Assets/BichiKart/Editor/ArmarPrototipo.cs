@@ -14,8 +14,8 @@ namespace BichiKart.Editor
 {
     /// <summary>
     /// Menú "BichiKart → Armar escena Prototipo": borra todo lo que hay en la escena Prototipo y la vuelve a
-    /// armar con la Cocina, los cuatro karts, la rebanada de pan, la partida, la cámara, la interfaz y la
-    /// luz. Los números del manejo, las reglas y las medidas de la sala quedan en Assets/BichiKart/Ajustes y
+    /// armar con la Cocina, los cuatro karts, la rebanada de pan, la partida, la cámara, la interfaz, la
+    /// pausa y la luz. Los números del manejo, las reglas y las medidas de la sala quedan en Assets/BichiKart/Ajustes y
     /// no se pisan.
     /// </summary>
     public static class ArmarPrototipo
@@ -66,10 +66,12 @@ namespace BichiKart.Editor
             var partida = CrearPartida(reglas, cocina, comida, participantes, niveles);
             var camara = CrearCamaras(participantes[0].Kart, capaSala);
             CrearInterfaz(partida, camara);
+            new GameObject("Pausa").AddComponent<Pausa>();
             CrearVolumen();
 
             EditorSceneManager.MarkSceneDirty(escena);
             EditorSceneManager.SaveScene(escena);
+            ArmarMenu.AsegurarEscenasDelJuego();
             Debug.Log("[Prototipo] Escena armada.");
         }
 

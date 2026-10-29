@@ -111,7 +111,7 @@ En equipos, cada uno mantiene su kart, pero lleva una **banderita y un aro de lu
 - **Copas:** 4 mapas. El primero es de calentamiento sin eliminar (da ventaja de tiempo en la final); después vienen 3 de eliminación hasta la final 1 contra 1.
 - **Modo historia:** en el planeta de los bichitos no hay comida y viajan a la casa espacial a buscar migas. Hay un capítulo por cuarto, en este orden: **Cocina → Baño → Cuarto de juguetes → Nave**.
   - **Jefe final, la aspiradora robot:** tiene la comida más grande de la casa. Hay que robársela y aguantar mientras te persigue aspirando.
-- **Dificultad de la compu:** niveles fijos (Fácil, Normal, Difícil) y una opción automática que se adapta a cómo jugás. En el prototipo ya están los tres niveles fijos: se arranca en Normal y se cambian con las teclas 1, 2 y 3.
+- **Dificultad de la compu:** niveles fijos (Fácil, Normal, Difícil) y una opción automática que se adapta a cómo jugás. En el prototipo ya están los tres niveles fijos y se eligen en Partida rápida.
 - **Para aprender:** un tutorial guiado y consejos en pantalla durante las primeras partidas.
 
 ## Online
@@ -262,6 +262,12 @@ La casa vista desde afuera, flotando en el espacio. La cámara la rodea despacio
 ![Concepto del menú principal: la casa flotando en el espacio con cada cuarto como opción](imagenes/menu-principal.png)
 
 *Concepto del menú principal hecho con Gemini.*
+
+**En el prototipo** ya está la casa hecha con formas simples, con un cartel de madera por cuarto. Solo funciona **Partida rápida**: la cámara viaja hasta el living y ahí se elige el nivel de la compu (nada más, para que sea rápida). Los otros cuartos dicen "¡Próximamente!". **Opciones** tiene cámara (sensibilidad del mouse, invertir vertical y anti-mareo), sonido (volumen) y pantalla (completa o ventana, y resolución), y se guardan en la PC.
+
+### Pausa
+
+- **Escape** (o Start en el joystick) frena la partida: **Seguir**, **Opciones** y **Volver al menú**.
 
 ### Repeticiones
 

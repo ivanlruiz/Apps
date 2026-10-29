@@ -9,22 +9,15 @@ namespace BichiKart
     /// entera si hace falta. Mientras se maneja (acelerando o doblando) y no se toca el mouse, Cinemachine
     /// la vuelve sola atrás del kart después de la espera del eje (1,5 s); quieto, queda donde la dejaste.
     /// El clic de la ruedita (o apretar el stick derecho) la centra enseguida. Para usar el mouse hay que
-    /// hacer clic en el juego; Escape suelta el mouse. La cámara gira con el kart cuando sube por las
-    /// paredes o va por el techo; con el anti-mareo ese giro es más lento.
+    /// hacer clic en el juego; en pausa el mouse queda suelto. La cámara gira con el kart cuando sube por
+    /// las paredes o va por el techo; con el anti-mareo ese giro es más lento. La sensibilidad, invertir
+    /// vertical y el anti-mareo salen de las <see cref="Opciones"/>.
     /// </summary>
     [RequireComponent(typeof(CinemachineOrbitalFollow))]
     public sealed class CamaraDelKart : MonoBehaviour
     {
-        [Tooltip("Grados que gira la cámara por cada punto que se mueve el mouse.")]
-        [SerializeField] private float sensibilidadMouse = 0.25f;
-
         [Tooltip("Grados por segundo que gira la cámara con el stick a fondo.")]
         [SerializeField] private float sensibilidadJoystick = 140f;
-
-        [SerializeField] private bool invertirVertical;
-
-        [Tooltip("Anti-mareo: la cámara acompaña más despacio los giros del kart en las paredes y el techo.")]
-        [SerializeField] private bool antiMareo;
 
         [Tooltip("Segundos que tarda la cámara en acompañar el giro del kart (normal y con anti-mareo).")]
         [SerializeField] private float suavizadoGiro = 0.25f, suavizadoAntiMareo = 1f;
@@ -36,12 +29,6 @@ namespace BichiKart
         private Kart _kart;
         private float _distanciaNormal;
         private bool _centrando;
-
-        public bool AntiMareo
-        {
-            get => antiMareo;
-            set => antiMareo = value;
-        }
 
         private void Awake()
         {
@@ -55,8 +42,13 @@ namespace BichiKart
 
         private void Update()
         {
+            if (Pausa.Activa)
+            {
+                SoltarMouse();
+                return;
+            }
             AplicarAntiMareo();
-            AtraparOSoltarMouse();
+            AtraparMouse();
 
             // Adentro de un caño, la cámara va pegada atrás del kart, por dentro.
             float distancia = _kart != null && _kart.EnCanio ? distanciaEnCanio : _distanciaNormal;
@@ -64,7 +56,7 @@ namespace BichiKart
 
             Vector2 giro = Vector2.zero;
             var mouse = Mouse.current;
-            if (mouse != null && Cursor.lockState == CursorLockMode.Locked) giro += mouse.delta.ReadValue() * sensibilidadMouse;
+            if (mouse != null && Cursor.lockState == CursorLockMode.Locked) giro += mouse.delta.ReadValue() * Opciones.GradosPorPunto;
             var joystick = Gamepad.current;
             if (joystick != null) giro += joystick.rightStick.ReadValue() * (sensibilidadJoystick * Time.deltaTime);
 
@@ -73,7 +65,7 @@ namespace BichiKart
                 // Cinemachine nota el cambio de valor y espera a que se suelte para volver la cámara atrás.
                 _centrando = false;
                 _orbita.HorizontalAxis.Value = _orbita.HorizontalAxis.ClampValue(_orbita.HorizontalAxis.Value + giro.x);
-                float vertical = invertirVertical ? giro.y : -giro.y;
+                float vertical = Opciones.InvertirVertical ? giro.y : -giro.y;
                 _orbita.VerticalAxis.Value = _orbita.VerticalAxis.ClampValue(_orbita.VerticalAxis.Value + vertical);
             }
             Recentrar(mouse, joystick);
@@ -111,18 +103,16 @@ namespace BichiKart
         private void AplicarAntiMareo()
         {
             var seguimiento = _orbita.TrackerSettings;
-            float buscado = antiMareo ? suavizadoAntiMareo : suavizadoGiro;
+            float buscado = Opciones.AntiMareo ? suavizadoAntiMareo : suavizadoGiro;
             if (Mathf.Approximately(seguimiento.QuaternionDamping, buscado)) return;
             seguimiento.QuaternionDamping = buscado;
             _orbita.TrackerSettings = seguimiento;
         }
 
-        private static void AtraparOSoltarMouse()
+        private static void AtraparMouse()
         {
-            var teclado = Keyboard.current;
             var mouse = Mouse.current;
-            if (teclado != null && teclado.escapeKey.wasPressedThisFrame) SoltarMouse();
-            else if (mouse != null && mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
