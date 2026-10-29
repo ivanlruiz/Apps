@@ -7,6 +7,7 @@ Uso, desde la carpeta bichikart:
   "A:\\Blender\\blender.exe" --background --factory-startup --python blender/bichitos.py --
       BichiKart/Assets/BichiKart/Resources/Bichitos imagenes/bichitos-3d.png
 (el primero es la carpeta de los modelos y el segundo, el render; si falta, va junto a los modelos).
+Con un tercero (por ejemplo blender/bichitos.blend) guarda también un archivo de Blender con los seis.
 
 Medidas: 1 unidad = 1 metro de Unity. Cada bichito mide ~1,2 de alto, con la base en z = 0 y
 mirando hacia -Y (hacia la cámara). El nombre de cada material lleva "#color|aspereza|brillo|laca"
@@ -402,6 +403,10 @@ escena.view_settings.view_transform = "Standard"
 escena.render.resolution_x, escena.render.resolution_y = 1800, 760
 escena.render.filepath = archivo_render
 bpy.ops.render.render(write_still=True)
+
+# Si se pide, se guarda un .blend con los seis en fila, para abrirlo en Blender y mirarlos o retocarlos.
+if len(argumentos) > 2:
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(argumentos[2]))
 
 # Cada bichito a su .glb, en el origen y con las curvas pasadas a malla.
 for b in bichitos:
